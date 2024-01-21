@@ -1,0 +1,26 @@
+- model: backend.shop
+  pk: 1
+  fields:
+    name: Связной
+    url: https://www.svyaznoy.ru/
+- model: backend.category
+  pk: 1
+  fields:
+    id: 1
+    name: Смартфоны
+    shops:
+    - 1
+- model: backend.category
+  pk: 2
+  fields:
+    id: 2
+    name: Аксессуары
+    shops:
+    - 1
+- model: backend.category
+  pk: 3
+  fields:
+    id: 3
+    name: Flash-накопители
+    shops:
+    - 1
