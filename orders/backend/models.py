@@ -1,19 +1,19 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django_rest_passwordreset.tokens import get_token_generator
 
 
 class User(AbstractUser):
-    surname = models.CharField(max_length=50)
-    name = models.CharField(max_length=50)
     email = models.EmailField(unique=True)
+    username = models.CharField(max_length=50, unique=True)
 
     class Meta:
-        ordering = ["surname", "name"]
+        ordering = ["email", ]
         verbose_name = "User"
         verbose_name_plural = "Users"
 
     def __str__(self):
-        return f"{self.surname} {self.name}"
+        return f"{self.first_name} {self.last_name}"
 
 
 class Shop(models.Model):
@@ -186,3 +186,29 @@ class Contact(models.Model):
 
     def __str__(self):
         return f"{self.city} {self.street}"
+
+
+class ConfirmEmailToken(models.Model):
+    @staticmethod
+    def generate_key():
+        return get_token_generator().generate_token()
+
+    key = models.CharField("Key", max_length=50, db_index=True, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True,)
+    user = models.ForeignKey(
+        User,
+        related_name='confirm_email_tokens',
+        on_delete=models.CASCADE,
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = self.generate_key()
+        return super(ConfirmEmailToken, self).save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Confirm Email token"
+        verbose_name_plural = "Confirm Email tokens"
+
+    def __str__(self):
+        return f"Password reset token for user {self.user}"
