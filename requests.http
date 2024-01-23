@@ -1,0 +1,133 @@
+# примеры API-запросов
+
+@baseUrl = http://localhost:8000/backend
+
+# получение магазинов
+GET {{baseUrl}}/shops/
+Content-Type: application/json
+
+###
+
+# получение категорий
+GET {{baseUrl}}/categories/
+Content-Type: application/json
+
+###
+
+# получение контактов
+GET {{baseUrl}}/contact/
+Content-Type: application/json
+Authorization: Token 031212223fbc71a7caac8decd365d2e7dc0dffa6
+
+###
+
+# создание контакта
+POST {{baseUrl}}/contact/
+Content-Type: application/json
+Authorization: Token 031212223fbc71a7caac8decd365d2e7dc0dffa6
+
+{
+  "phone": "89001234567",
+  "city": "Moscow",
+  "street": "Tverskaya",
+  "house": "10",
+  "building": "1",
+  "structure": "2",
+  "apartment": "124"
+}
+
+###
+
+# изменение контакта
+PUT {{baseUrl}}/contact/
+Content-Type: application/json
+Authorization: Token 031212223fbc71a7caac8decd365d2e7dc0dffa6
+
+{
+  "contact_id": "26",
+  "phone": "87598598",
+  "city": "Moscow",
+  "street": "Tverskaya",
+  "house": "10",
+  "building": "1",
+  "structure": "2",
+  "apartment": "100"
+
+}
+
+###
+
+# удаление контакта
+DELETE {{baseUrl}}/contact/
+Content-Type: application/json
+Authorization: Token 031212223fbc71a7caac8decd365d2e7dc0dffa6
+
+{
+  "contact_id": "25"
+}
+
+###
+
+# получение информации о продукте
+GET {{baseUrl}}/product_info?shop_id=1&category_id=1&product_id=1
+Content-Type: application/json
+
+###
+
+# регистрация пользователя
+POST {{baseUrl}}/register/
+Content-Type: application/json
+
+{
+  "first_name": "max",
+  "last_name": "tols",
+  "email": "tolstikov-95@inbox.ru",
+  "password": "admin123",
+  "username": "admin1234"
+}
+
+###
+
+# подтверждение пользователя
+POST {{baseUrl}}/confirm/
+Content-Type: application/json
+
+{
+  "email": "tolstikov-95@inbox.ru",
+  "token": "3817895613188abbb4470351fb68"
+}
+
+###
+
+# детали пользователя
+GET {{baseUrl}}/account/
+Content-Type: application/json
+Authorization: Token c40dfc8082892237f57c37ef1e6d3499513e9ccb
+
+
+
+###
+
+# изменение деталей пользователя
+POST {{baseUrl}}/account/
+Content-Type: application/json
+Authorization: Token c40dfc8082892237f57c37ef1e6d3499513e9ccb
+
+{
+  "first_name": "maxsy",
+  "last_name": "tols",
+  "email": "tolstikov-99097@inbox.ru",
+  "password": "admin123",
+  "username": "admin12345"
+}
+
+###
+
+# логин пользователя
+POST {{baseUrl}}/login/
+Content-Type: application/json
+
+{
+  "username": "admin123",
+  "password": "admin123"
+}

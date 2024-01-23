@@ -55,7 +55,7 @@ class ProductInfoSerializer(serializers.ModelSerializer):
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
-        fields = ('id', 'phone', 'city', 'street', 'house', 'building', 'structure', 'apartment',)
+        fields = ('id', 'phone', 'city', 'street', 'house', 'building', 'structure', 'apartment', 'user')
         read_only_fields = ('id',)
 
 

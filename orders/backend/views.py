@@ -1,13 +1,15 @@
+from django.contrib.auth import authenticate
 from django.shortcuts import render, get_object_or_404
 from orders import settings
 from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
 
 from .models import Shop, Category, Product, ProductInfo, Contact, ConfirmEmailToken
 from .serializers import CategorySerializer, ShopSerializer, ProductSerializer, ProductInfoSerializer, \
     ContactSerializer, UserSerializer
-from .signals import new_user_registered_signal
+from .signals import new_user_registered
 
 
 class ShopView(ListAPIView):
@@ -30,10 +32,10 @@ class ProductInfoView(ListAPIView):
         shop_id = request.GET.get("shop_id")
         category_id = request.GET.get("category_id")
         product_id = request.GET.get("product_id")
-        li = {'shop_id': shop_id, 'category_id': category_id, 'product_id': product_id}
-
-        if shop_id is None or category_id is None or product_id is None:
-            return Response(f"Не указан {[i for i, j in li.items() if j is None]}")
+        list_id = {'shop_id': shop_id, 'category_id': category_id, 'product_id': product_id}
+        for key, value in list_id.items():
+            if value is None:
+                return Response(f'Not added {key}')
         else:
             queryset = ProductInfo.objects.filter(
                 shop_id=shop_id, product__category_id=category_id, product_id=product_id)
@@ -49,10 +51,10 @@ class RegisterUserView(APIView):
                 user = serializer.save()
                 user.set_password(user.password)
                 user.save()
-                return Response('User register')
+                return Response('User registered')
             else:
                 return Response(serializer.errors)
-        return Response('Not all arguments!')
+        return Response('Not added all arguments')
 
 
 class ConfirmUserView(APIView):
@@ -64,54 +66,91 @@ class ConfirmUserView(APIView):
             ).first()
 
             if token:
-                token.save()
+                token.user.save()
+                token.delete()
                 return Response('Good')
             else:
-                return Response('Bad')
+                return Response('Incorrectly token or email')
         else:
-            return Response('Very Bad')
+            return Response('No added all values')
 
 
 class AccountDetailsView(APIView):
     def get(self, request, *arg, **kwargs):
-        ...
+        if not request.user.is_authenticated:
+            return Response('Log in required')
+
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
 
     def post(self, request, *arg, **kwargs):
-        ...
+        serializer = UserSerializer(request.user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response('Account details is updated')
+        else:
+            return Response(serializer.errors)
 
 
-class LoginAccount(APIView):
-    def post(self, request, *arg, **kwargs):
-        ...
+class LoginAccountView(APIView):
+    def post(self, request, *args, **kwargs):
+        if {'username', 'password'}.issubset(request.data):
+            user = authenticate(request, username=request.data['username'], password=request.data['password'])
+            if user is not None:
+                token, _ = Token.objects.get_or_create(user=user)
+                return Response(token.key)
+            else:
+                return Response('Incorrectly data')
+        else:
+            return Response('No added all values')
 
 
 class ContactView(APIView):
     def get(self, request, *arg, **kwargs):
-        # if not request.user.is_authenticated:
-        #     return Response('Log in required', status=403)
         contact = Contact.objects.filter(user_id=request.user.id)
         serializer = ContactSerializer(contact, many=True)
         return Response(serializer.data)
 
     def post(self, request, *arg, **kwargs):
-        li = ['phone', 'city', 'street', 'house', 'building', 'structure', 'apartment']
-        if li in request.data:
-            request.data.update(user_id=request.user.id)
+        contact = {'phone', 'city', 'street', 'house', 'building', 'structure', 'apartment'}
+        if contact.issubset(request.data):
+            request.data.update({'user': request.user.id})
             serializer = ContactSerializer(data=request.data)
-            # if serializer.is_valid():
-            #     serializer.save()
-            return Response(serializer.data)
-            # else:
-            #     return Response(serializer.errors)
-        return Response('Указан не полный адрес')
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors)
+        return Response('No added all contacts')
 
     def put(self, request, *arg, **kwargs):
-        contact = Contact.objects.filter(user_id=request.user.id)
-        if contact:
-            serializer = ContactSerializer(contact, data=request.data)
-            return Response(serializer.data)
+        contact_id = request.data.get('contact_id')
+        contact = Contact.objects.filter(id=contact_id, user_id=request.user.id).first()
+        serializer = ContactSerializer(contact, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response('Contact is updated')
+        else:
+            return Response(serializer.errors)
 
     def delete(self, request, *arg, **kwargs):
-        contact = Contact.objects.filter(user_id=request.user.id)
+        contact_id = request.data.get('contact_id')
+        contact = Contact.objects.filter(id=contact_id, user_id=request.user.id).delete()
         serializer = ContactSerializer(contact, data=request.data)
-        return Response(serializer.data)
+        if serializer.is_valid():
+            serializer.save()
+        return Response('Contact is deleted')
+
+
+class BasketView(APIView):
+    def get(self, request, *arg, **kwargs):
+        ...
+
+    def post(self, request, *arg, **kwargs):
+        ...
+
+    def put(self, request, *arg, **kwargs):
+        ...
+
+    def delete(self, request, *arg, **kwargs):
+        ...
