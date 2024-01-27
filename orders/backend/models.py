@@ -4,9 +4,16 @@ from django_rest_passwordreset.tokens import get_token_generator
 
 
 class User(AbstractUser):
+    class Status(models.TextChoices):
+        SHOP = "SP", "Shop"
+        BUYER = "BR", "Buyer"
+
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=50, unique=True)
     is_active = models.BooleanField(default=False)
+    type = models.CharField(max_length=2, choices=Status.choices, default='BR')
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
 
     class Meta:
         ordering = ["email", ]
@@ -14,12 +21,12 @@ class User(AbstractUser):
         verbose_name_plural = "Users"
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.last_name} {self.first_name}"
 
 
 class Shop(models.Model):
     name = models.CharField(max_length=50)
-    url = models.URLField(null=True)
+    url = models.URLField(null=True, blank=True)
 
     class Meta:
         ordering = ["name"]
@@ -64,24 +71,24 @@ class Product(models.Model):
 
 
 class ProductInfo(models.Model):
-    model = models.CharField(max_length=100)
+    model = models.CharField(max_length=100, blank=True, null=True)
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     price_rrc = models.DecimalField(max_digits=10, decimal_places=2)
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
-        related_name="info"
+        related_name="product_info"
     )
     shop = models.ForeignKey(
         Shop,
         on_delete=models.CASCADE,
-        related_name="info"
+        related_name="product_info"
     )
 
     class Meta:
-        verbose_name = "Product info"
-        verbose_name_plural = "Products info"
+        verbose_name = "Product information"
+        verbose_name_plural = "Product information"
 
 
 class Parameter(models.Model):
@@ -166,9 +173,9 @@ class Contact(models.Model):
     city = models.CharField(max_length=80)
     street = models.CharField(max_length=100)
     house = models.CharField(max_length=10)
-    building = models.CharField(max_length=5)
-    structure = models.CharField(max_length=5)
-    apartment = models.CharField(max_length=10)
+    building = models.CharField(max_length=5, blank=True)
+    structure = models.CharField(max_length=5, blank=True)
+    apartment = models.CharField(max_length=10, blank=True)
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -191,7 +198,7 @@ class ConfirmEmailToken(models.Model):
         return get_token_generator().generate_token()
 
     key = models.CharField(max_length=50, db_index=True, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True,)
+    created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(
         User,
         related_name='confirm_email_tokens',

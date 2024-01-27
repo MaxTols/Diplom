@@ -137,9 +137,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "backend.User"
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
+    "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
-    ]
+    )
 }
 
 
@@ -152,3 +152,4 @@ EMAIL_HOST_USER = 'netology.diplom@mail.ru'
 EMAIL_HOST_PASSWORD = 'RANGVKPEZ61jsCgTbsbG'
 EMAIL_PORT = '465'
 EMAIL_USE_SSL = True
+SERVER_EMAIL = EMAIL_HOST_USER

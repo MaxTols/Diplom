@@ -38,18 +38,20 @@ class ProductInfoSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
-# class ParameterSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Parameter
-#         fields = ('id', 'name')
-#         read_only_fields = ('id',)
-#
-#
-# class ProductParameterSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = ProductParameter
-#         fields = ('id', 'value')
-#         read_only_fields = ('id',)
+class ParameterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Parameter
+        fields = ('id', 'name')
+        read_only_fields = ('id',)
+
+
+class ProductParameterSerializer(serializers.ModelSerializer):
+    parameter = ParameterSerializer(read_only=True)
+
+    class Meta:
+        model = ProductParameter
+        fields = ('id', 'parameter', 'value')
+        read_only_fields = ('id',)
 
 
 class ContactSerializer(serializers.ModelSerializer):
