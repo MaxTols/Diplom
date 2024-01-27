@@ -80,9 +80,8 @@ class OrderSerializer(serializers.ModelSerializer):
 class OrderItemSerializer(serializers.ModelSerializer):
     order = OrderSerializer(read_only=True)
     product_info = ProductInfoSerializer(read_only=True)
-    shop = ShopSerializer(read_only=True)
 
     class Meta:
         model = OrderItem
-        fields = ('id', 'order', 'shop', 'product_info', 'quantity')
+        fields = ('id', 'order', 'product_info', 'quantity')
         read_only_fields = ('id',)

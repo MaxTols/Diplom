@@ -6,21 +6,21 @@
 - model: backend.category
   pk: 1
   fields:
-    id: 1
+    id: 224
     name: Смартфоны
     shops:
     - 1
 - model: backend.category
   pk: 2
   fields:
-    id: 2
+    id: 15
     name: Аксессуары
     shops:
     - 1
 - model: backend.category
   pk: 3
   fields:
-    id: 3
+    id: 1
     name: Flash-накопители
     shops:
     - 1

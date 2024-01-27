@@ -66,6 +66,7 @@ class ConfirmUserView(APIView):
             ).first()
 
             if token:
+                token.user.is_active = True
                 token.user.save()
                 token.delete()
                 return Response('Good')
@@ -153,4 +154,9 @@ class BasketView(APIView):
         ...
 
     def delete(self, request, *arg, **kwargs):
+        ...
+
+
+class OrderView(APIView):
+    def get(self, request, *arg, **kwargs):
         ...

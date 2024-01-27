@@ -27,7 +27,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(ProductInfo)
 class ProductInfoAdmin(admin.ModelAdmin):
-    list_display = ['name', 'quantity', 'price', 'price_rrc', ]
+    list_display = ['model', 'quantity', 'price', 'price_rrc', ]
 
 
 @admin.register(Order)

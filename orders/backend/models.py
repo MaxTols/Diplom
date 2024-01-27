@@ -6,6 +6,7 @@ from django_rest_passwordreset.tokens import get_token_generator
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=50, unique=True)
+    is_active = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["email", ]
@@ -63,7 +64,7 @@ class Product(models.Model):
 
 
 class ProductInfo(models.Model):
-    name = models.CharField(max_length=100)
+    model = models.CharField(max_length=100)
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     price_rrc = models.DecimalField(max_digits=10, decimal_places=2)
@@ -116,6 +117,7 @@ class ProductParameter(models.Model):
 class Order(models.Model):
 
     class Status(models.TextChoices):
+        BASKET = "BT", "Basket"
         CREATED = "CR", "Created"
         ASSEMBLED = "AD", "Assembled"
         SENT = "ST", "Sent"
@@ -153,11 +155,6 @@ class OrderItem(models.Model):
         on_delete=models.CASCADE,
         related_name="order_items"
     )
-    shop = models.ForeignKey(
-        Shop,
-        on_delete=models.CASCADE,
-        related_name="items"
-    )
 
     class Meta:
         verbose_name = "Order item"
@@ -193,7 +190,7 @@ class ConfirmEmailToken(models.Model):
     def generate_key():
         return get_token_generator().generate_token()
 
-    key = models.CharField("Key", max_length=50, db_index=True, unique=True)
+    key = models.CharField(max_length=50, db_index=True, unique=True)
     created_at = models.DateTimeField(auto_now_add=True,)
     user = models.ForeignKey(
         User,
@@ -205,10 +202,6 @@ class ConfirmEmailToken(models.Model):
         if not self.key:
             self.key = self.generate_key()
         return super(ConfirmEmailToken, self).save(*args, **kwargs)
-
-    class Meta:
-        verbose_name = "Confirm Email token"
-        verbose_name_plural = "Confirm Email tokens"
 
     def __str__(self):
         return f"Password reset token for user {self.user}"
