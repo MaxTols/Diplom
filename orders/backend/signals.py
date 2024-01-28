@@ -11,6 +11,7 @@ from .models import ConfirmEmailToken, User
 
 @receiver(post_save, sender=User)
 def new_user_registered(sender: Type[User], instance: User, created: bool, **kwargs):
-    token, _ = ConfirmEmailToken.objects.get_or_create(user_id=instance.pk)
-    msg = EmailMultiAlternatives(f"Token for {instance.email}", token.key, settings.EMAIL_HOST_USER, [instance.email])
-    msg.send()
+    if created and not instance.is_active:
+        token, _ = ConfirmEmailToken.objects.get_or_create(user_id=instance.pk)
+        msg = EmailMultiAlternatives(f"Token for {instance.email}", token.key, settings.EMAIL_HOST_USER, [instance.email])
+        msg.send()

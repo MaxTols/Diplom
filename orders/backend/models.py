@@ -25,8 +25,19 @@ class User(AbstractUser):
 
 
 class Shop(models.Model):
+    class Status(models.TextChoices):
+        OPEN = "OP", "Open"
+        CLOSE = "CL", "Close"
+
     name = models.CharField(max_length=50)
     url = models.URLField(null=True, blank=True)
+    status = models.CharField(max_length=2, choices=Status.choices, default='OP')
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
 
     class Meta:
         ordering = ["name"]

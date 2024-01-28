@@ -1,11 +1,13 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
+from django.db import IntegrityError
+from django.db.models import Sum, F
 from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
-from .models import Shop, Category, Product, ProductInfo, Contact, ConfirmEmailToken, Order, OrderItem, User
+from .models import Shop, Category, Product, ProductInfo, Contact, ConfirmEmailToken, Order, OrderItem
 from .serializers import CategorySerializer, ShopSerializer, ProductSerializer, ProductInfoSerializer, \
     ContactSerializer, UserSerializer, OrderSerializer, OrderItemSerializer
 from .signals import new_user_registered
@@ -29,15 +31,14 @@ class ProductView(ListAPIView):
 class ProductInfoView(ListAPIView):
     def get(self, request, *args, **kwargs):
         shop_id = request.GET.get("shop_id")
-        category_id = request.GET.get("category_id")
         product_id = request.GET.get("product_id")
-        list_id = {'shop_id': shop_id, 'category_id': category_id, 'product_id': product_id}
+        list_id = {'shop_id': shop_id, 'product_id': product_id}
         for key, value in list_id.items():
             if value is None:
                 return Response(f'Not added {key}')
         else:
             queryset = ProductInfo.objects.filter(
-                shop_id=shop_id, product__category_id=category_id, product_id=product_id)
+                shop_id=shop_id, product_id=product_id)
             serializer = ProductInfoSerializer(queryset, many=True)
             return Response(serializer.data)
 
@@ -98,12 +99,14 @@ class LoginAccountView(APIView):
 class AccountDetailsView(APIView):
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return Response('Log in required')
+            return Response('Log in required', status=403)
 
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
         serializer = UserSerializer(request.user, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -114,11 +117,15 @@ class AccountDetailsView(APIView):
 
 class ContactView(APIView):
     def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
         contact = Contact.objects.filter(user_id=request.user.id)
         serializer = ContactSerializer(contact, many=True)
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
         contact = {'phone', 'city', 'street', 'house', 'building', 'structure', 'apartment'}
         if contact.issubset(request.data):
             request.data.update({'user': request.user.id})
@@ -131,6 +138,8 @@ class ContactView(APIView):
         return Response('No added all contacts')
 
     def put(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
         contact_id = request.data.get('contact_id')
         contact = Contact.objects.filter(id=contact_id, user_id=request.user.id).first()
         serializer = ContactSerializer(contact, data=request.data)
@@ -141,6 +150,8 @@ class ContactView(APIView):
             return Response(serializer.errors)
 
     def delete(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
         contact_id = request.data.get('contact_id')
         contact = Contact.objects.filter(id=contact_id, user_id=request.user.id).delete()
         serializer = ContactSerializer(contact, data=request.data)
@@ -151,22 +162,31 @@ class ContactView(APIView):
 
 class BasketView(APIView):
     def get(self, request, *args, **kwargs):
-        basket = Order.objects.filter(user_id=request.user.id, status='BT').prefetch_related(
-            'ordered_items__product_info__product__category')
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
+        basket = Order.objects.filter(
+            user_id=request.user.id, status='BT').prefetch_related(
+            'order_items__product_info__product__category',
+            'order_items__product_info__product_parameters__parameter').annotate(
+            total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price'))).distinct()
         serializer = OrderSerializer(basket, many=True)
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
         basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='BT')
         item = request.data
         item.update({'order': basket.id})
-        serializer = OrderSerializer(data=item)
+        serializer = OrderItemSerializer(data=item)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors)
 
     def put(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
         basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='BT')
         item = request.data
         obj = OrderItem.objects.filter(order_id=basket.id, id=item['id']).update(
@@ -174,18 +194,62 @@ class BasketView(APIView):
         return Response(obj)
 
     def delete(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
         basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='BT')
-        item = OrderItem.objects.filter(order_id=basket.id, id=request.data.items).delete()
-        serializer = OrderItemSerializer(item, many=True)
-        return Response(serializer.data)
+        item = OrderItem.objects.filter(order_id=basket.id, id=request.data['id']).delete()
+        # serializer = OrderItemSerializer(item, many=True)
+        # return Response(serializer.data)
+        print(item)
+        return Response('Ok')
 
 
 class OrderView(APIView):
     def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
         order = Order.objects.filter(user_id=request.user.id).exclude(status='BT').prefetch_related(
-            'order_items__product_info__product__category').select_related('contact')
+            'order_items__product_info__product__category',
+            'order_items__product_info__product_parameters__parameter').annotate(
+            total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price'))).distinct()
         serializer = OrderSerializer(order, many=True)
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        ...
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
+        if {'id', }.issubset(request.data):
+            try:
+                is_update = Order.objects.filter(
+                    user_id=request.user.id, id=request.data['id']).update(status='CR')
+                return Response('Good')
+            except IntegrityError as error:
+                print(error)
+                return Response('Bad')
+        return Response('Very Bad')
+
+
+class ShopOrdersView(APIView):
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
+        if request.user.type != 'SP':
+            return Response('Only shop', status=403)
+        order = Order.objects.filter(
+            order_items__product_info__shop__user_id=request.user.id).exclude(status='BT').prefetch_related(
+            'order_items__product_info__product__category',
+            'order_items__product_info__product_parameters__parameter').annotate(
+            total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price'))).distinct()
+        serializer = OrderSerializer(order, many=True)
+        return Response(serializer.data)
+
+
+class ShopStatusView(APIView):
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
+        if request.user.type != 'SP':
+            return Response('Only shop', status=403)
+        shop = request.user.shop
+        serializer = ShopSerializer(shop)
+        return Response(serializer.data)

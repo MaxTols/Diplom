@@ -11,11 +11,9 @@ class ShopSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    shop = ShopSerializer(read_only=True)
-
     class Meta:
         model = Category
-        fields = ('id', 'name', 'shop')
+        fields = ('id', 'name')
         read_only_fields = ('id',)
 
 
@@ -25,16 +23,6 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ('id', 'name', 'category')
-        read_only_fields = ('id',)
-
-
-class ProductInfoSerializer(serializers.ModelSerializer):
-    shop = ShopSerializer(read_only=True)
-    product = ProductSerializer(read_only=True)
-
-    class Meta:
-        model = ProductInfo
-        fields = ('id', 'name', 'shop', 'product', 'quantity', 'price', 'price_rrc')
         read_only_fields = ('id',)
 
 
@@ -62,28 +50,38 @@ class ContactSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    contacts = ContactSerializer(many=True, read_only=True)
+    contact = ContactSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'contacts', 'username')
+        fields = ('id', 'first_name', 'last_name', 'email', 'username', 'type', 'contact')
         read_only_fields = ('id',)
 
 
-class OrderSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+class ProductInfoSerializer(serializers.ModelSerializer):
+    product_parameters = ProductParameterSerializer(read_only=True, many=True)
+    product = ProductSerializer(read_only=True)
 
     class Meta:
-        model = Order
-        fields = ('id', 'dt', 'status', 'user')
+        model = ProductInfo
+        fields = ('id', 'model', 'shop', 'quantity', 'price', 'price_rrc', 'product', 'product_parameters')
         read_only_fields = ('id',)
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    order = OrderSerializer(read_only=True)
     product_info = ProductInfoSerializer(read_only=True)
 
     class Meta:
         model = OrderItem
-        fields = ('id', 'order', 'product_info', 'quantity')
+        fields = ('id', 'quantity', 'order', 'product_info')
+        read_only_fields = ('id',)
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    order_items = OrderItemSerializer(read_only=True, many=True)
+    total_sum = serializers.IntegerField()
+
+    class Meta:
+        model = Order
+        fields = ('id', 'total_sum', 'dt', 'status', 'user', 'order_items')
         read_only_fields = ('id',)
