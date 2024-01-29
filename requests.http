@@ -14,17 +14,22 @@ Content-Type: application/json
 
 ###
 
+# получение продуктов
+GET {{baseUrl}}/products/
+Content-Type: application/json
+
+###
 # получение контактов
 GET {{baseUrl}}/contact/
 Content-Type: application/json
-Authorization: Token 031212223fbc71a7caac8decd365d2e7dc0dffa6
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
 
 ###
 
 # создание контакта
 POST {{baseUrl}}/contact/
 Content-Type: application/json
-Authorization: Token 031212223fbc71a7caac8decd365d2e7dc0dffa6
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
 
 {
   "phone": "89001234567",
@@ -41,10 +46,10 @@ Authorization: Token 031212223fbc71a7caac8decd365d2e7dc0dffa6
 # изменение контакта
 PUT {{baseUrl}}/contact/
 Content-Type: application/json
-Authorization: Token 031212223fbc71a7caac8decd365d2e7dc0dffa6
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
 
 {
-  "contact_id": "26",
+  "contact_id": "1",
   "phone": "87598598",
   "city": "Moscow",
   "street": "Tverskaya",
@@ -60,16 +65,16 @@ Authorization: Token 031212223fbc71a7caac8decd365d2e7dc0dffa6
 # удаление контакта
 DELETE {{baseUrl}}/contact/
 Content-Type: application/json
-Authorization: Token 031212223fbc71a7caac8decd365d2e7dc0dffa6
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
 
 {
-  "contact_id": "25"
+  "contact_id": "1"
 }
 
 ###
 
 # получение информации о продукте
-GET {{baseUrl}}/product_info?shop_id=1&category_id=1&product_id=1
+GET {{baseUrl}}/product_info?shop_id=2&product_id=4216292
 Content-Type: application/json
 
 ###
@@ -82,8 +87,9 @@ Content-Type: application/json
   "first_name": "max",
   "last_name": "tols",
   "email": "tolstikov-95@inbox.ru",
-  "password": "admin123",
-  "username": "admin1234"
+  "password": "admin1234567",
+  "username": "admin123",
+  "type": "SP"
 }
 
 ###
@@ -94,31 +100,7 @@ Content-Type: application/json
 
 {
   "email": "tolstikov-95@inbox.ru",
-  "token": "3817895613188abbb4470351fb68"
-}
-
-###
-
-# детали пользователя
-GET {{baseUrl}}/account/
-Content-Type: application/json
-Authorization: Token c40dfc8082892237f57c37ef1e6d3499513e9ccb
-
-
-
-###
-
-# изменение деталей пользователя
-POST {{baseUrl}}/account/
-Content-Type: application/json
-Authorization: Token c40dfc8082892237f57c37ef1e6d3499513e9ccb
-
-{
-  "first_name": "maxsy",
-  "last_name": "tols",
-  "email": "tolstikov-99097@inbox.ru",
-  "password": "admin123",
-  "username": "admin12345"
+  "token": "6fcbfd8ad074"
 }
 
 ###
@@ -128,6 +110,113 @@ POST {{baseUrl}}/login/
 Content-Type: application/json
 
 {
-  "username": "admin123",
-  "password": "admin123"
+  "email": "tolstikov-95@inbox.ru",
+  "password": "admin1234567"
 }
+
+###
+
+# детали пользователя
+GET {{baseUrl}}/account/
+Content-Type: application/json
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+###
+
+# изменение деталей пользователя
+POST {{baseUrl}}/account/
+Content-Type: application/json
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+{
+  "first_name": "maxsy",
+  "last_name": "tolsy",
+  "email": "tolstikov-995@inbox.ru",
+  "password": "admin1234567",
+  "username": "admin1234"
+}
+
+
+###############
+
+
+# получение товаров из корзины
+GET {{baseUrl}}/basket/
+Content-Type: application/json
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+###
+
+# добавление товаров в корзину
+POST {{baseUrl}}/basket/
+Content-Type: application/json
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+{
+  "product_info": 3,
+  "quantity": 2
+}
+
+###
+
+# редактирование товаров корзины
+PUT {{baseUrl}}/basket/
+Content-Type: application/json
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+{
+  "id": 4,
+  "quantity": 20
+}
+
+###
+
+# удаление товаров из корзины
+DELETE {{baseUrl}}/basket/
+Content-Type: application/json
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+{
+  "id": 19
+}
+
+###
+
+# получение заказов
+GET {{baseUrl}}/order/
+Content-Type: application/json
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+###
+
+# размещение заказов
+POST {{baseUrl}}/order/
+Content-Type: application/json
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+{
+  "id": 3,
+  "contact": 2
+}
+
+###
+
+# получение заказов магазином
+GET {{baseUrl}}/shop/orders/
+Content-Type: application/json
+Authorization: Token 3eca308830f5b493f5324074ddcbe40976169843
+
+###
+
+# получение статуса магазина
+GET {{baseUrl}}/shop/status/
+Content-Type: application/json
+Authorization: Token 3eca308830f5b493f5324074ddcbe40976169843
+
+###
+
+# изменение статуса магазина
+
+POST {{baseUrl}}/shop/status/
+Content-Type: application/json
+Authorization: Token 3eca308830f5b493f5324074ddcbe40976169843

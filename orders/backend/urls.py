@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import CategoryView, ShopView, ProductView, ProductInfoView, ContactView, RegisterUserView, \
-    ConfirmUserView, AccountDetailsView, LoginAccountView, BasketView, OrderView, ShopOrdersView
+    ConfirmUserView, AccountDetailsView, LoginAccountView, BasketView, OrderView, ShopOrdersView, ShopStatusView
 
 urlpatterns = [
     path('categories/', CategoryView.as_view(), name='categories'),
@@ -15,4 +15,5 @@ urlpatterns = [
     path('basket/', BasketView.as_view(), name='basket'),
     path('order/', OrderView.as_view(), name='order'),
     path('shop/orders/', ShopOrdersView.as_view(), name='shop_orders'),
+    path('shop/status/', ShopStatusView.as_view(), name='shop_status'),
 ]

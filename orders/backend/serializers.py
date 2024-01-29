@@ -6,7 +6,7 @@ from .models import User, Shop, Category, Product, ProductInfo, Parameter, Produ
 class ShopSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shop
-        fields = ('id', 'name', 'url')
+        fields = ('id', 'name', 'url', 'status')
         read_only_fields = ('id',)
 
 

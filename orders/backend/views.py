@@ -46,7 +46,6 @@ class ProductInfoView(ListAPIView):
 class RegisterUserView(APIView):
     def post(self, request, *args, **kwargs):
         if {'first_name', 'last_name', 'email', 'password', 'username'}.issubset(request.data):
-            sad = 'asd'
             try:
                 validate_password(request.data['password'])
             except Exception as password_error:
@@ -253,3 +252,17 @@ class ShopStatusView(APIView):
         shop = request.user.shop
         serializer = ShopSerializer(shop)
         return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
+        if request.user.type != 'SP':
+            return Response('Only shop', status=403)
+        shop = Shop.objects.filter(user_id=request.user.id)
+        status_dict = {'CL': 'OP', 'OP': 'CL'}
+        for atr in shop:
+            status, name = atr.status, atr.name
+            status_reverse = status_dict[status]
+            Shop.objects.filter(
+                user_id=request.user.id).update(status=status_reverse)
+            return Response(f'Status {name} is {status_reverse}')
