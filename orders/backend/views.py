@@ -6,11 +6,14 @@ from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+from requests import get
+from yaml import load as load_yaml, Loader
 
-from .models import Shop, Category, Product, ProductInfo, Contact, ConfirmEmailToken, Order, OrderItem
+from .models import Shop, Category, Product, ProductInfo, Contact, ConfirmEmailToken, Order, OrderItem,\
+    ProductParameter, Parameter
 from .serializers import CategorySerializer, ShopSerializer, ProductSerializer, ProductInfoSerializer, \
     ContactSerializer, UserSerializer, OrderSerializer, OrderItemSerializer
-from .signals import new_user_registered
+from .signals import new_order
 
 
 class ShopView(ListAPIView):
@@ -221,10 +224,13 @@ class OrderView(APIView):
             try:
                 is_update = Order.objects.filter(
                     user_id=request.user.id, id=request.data['id']).update(status='CR')
-                return Response('Good')
             except IntegrityError as error:
                 print(error)
                 return Response('Bad')
+            else:
+                if is_update:
+                    new_order.send(sender=self.__class__, user_id=request.user.id)
+                    return Response('Very Good')
         return Response('Very Bad')
 
 
@@ -266,3 +272,60 @@ class ShopStatusView(APIView):
             Shop.objects.filter(
                 user_id=request.user.id).update(status=status_reverse)
             return Response(f'Status {name} is {status_reverse}')
+
+
+class ShopUpdate(APIView):
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
+        if request.user.type != 'SP':
+            return Response('Only shop', status=403)
+        url = request.data.get('url')
+        stream = get(url).content
+        data = load_yaml(stream, Loader=Loader)
+        shop, _ = Shop.objects.get_or_create(name=data['shop'], user_id=request.user.id)
+        for category in data['categories']:
+            category_obj, _ = Category.objects.get_or_create(id=category['id'], name=category['name'])
+            category_obj.shops.add(shop.id)
+            category_obj.save()
+        ProductInfo.objects.filter(shop_id=shop.id).delete()
+        for item in data['goods']:
+            product, _ = Product.objects.get_or_create(name=item['name'], category=item['category'])
+            product_info = ProductInfo.objects.get_or_create(
+                product_id=product.id,
+                model=item['model'],
+                price=item['price'],
+                price_rrc=item['price_rrc'],
+                quantity=item['quantity'],
+                shop_id=shop.id
+            )
+            for name, value in item['parameters'].items:
+                parameter_obj, _ = Parameter.objects.get_or_create(name=name)
+                ProductParameter.objects.create(
+                    product_info_id=product_info.id,
+                    parameter_id=parameter_obj.id,
+                    value=value
+                )
+            return Response('Good')
+        return Response('Bad')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -30,7 +30,6 @@
   fields:
     name: goods
     url: https://www.megamarket.ru/
-    user: 5
 - model: backend.product
   pk: 1
   fields:

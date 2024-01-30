@@ -30,7 +30,7 @@ SECRET_KEY = "django-insecure-+vv#ax$vn=glxk3tynbx0v@c8h83me_)#9n=r6+(cfx(n9can6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "backend.apps.BackendConfig",
     "rest_framework",
     "rest_framework.authtoken",
+    # "django_rest_passwordreset",
 ]
 
 MIDDLEWARE = [
@@ -153,3 +154,30 @@ EMAIL_HOST_PASSWORD = 'RANGVKPEZ61jsCgTbsbG'
 EMAIL_PORT = '465'
 EMAIL_USE_SSL = True
 SERVER_EMAIL = EMAIL_HOST_USER
+
+
+# Celery Settings:
+
+# https://docs.celeryproject.org/en/stable/userguide/configuration.html#accept-content
+# https://docs.celeryproject.org/en/stable/userguide/configuration.html#result-accept-content
+CELERY_ACCEPT_CONTENT = ["json", "pickle"]
+CELERY_RESULT_ACCEPT_CONTENT = CELERY_ACCEPT_CONTENT.copy()
+
+# https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-compression
+# https://docs.celeryproject.org/en/stable/userguide/configuration.html#result-compression
+CELERY_TASK_COMPRESSION = "lzma"
+CELERY_RESULT_COMPRESSION = CELERY_TASK_COMPRESSION
+
+# https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-serializer
+# https://docs.celeryproject.org/en/stable/userguide/configuration.html#result-serializer
+CELERY_TASK_SERIALIZER = "pickle"
+CELERY_RESULT_SERIALIZER = CELERY_TASK_SERIALIZER
+
+# https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-ignore-result
+CELERY_TASK_IGNORE_RESULT = True
+
+APPEND_SLASH = False
+
+# CELERY_BROKER_URL = 'redis://127.0.0.1'
+# CELERY_BROKER_TRANSPORT = 'redis'
+# CELERY_BROKER_BACKEND = 'django-db'

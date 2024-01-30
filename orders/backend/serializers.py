@@ -69,16 +69,18 @@ class ProductInfoSerializer(serializers.ModelSerializer):
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    product_info = ProductInfoSerializer(read_only=True)
-
     class Meta:
         model = OrderItem
         fields = ('id', 'quantity', 'order', 'product_info')
         read_only_fields = ('id',)
 
 
+class OrderItemCreateSerializer(OrderItemSerializer):
+    product_info = ProductInfoSerializer(read_only=True)
+
+
 class OrderSerializer(serializers.ModelSerializer):
-    order_items = OrderItemSerializer(read_only=True, many=True)
+    order_items = OrderItemCreateSerializer(read_only=True, many=True)
     total_sum = serializers.IntegerField()
 
     class Meta:
