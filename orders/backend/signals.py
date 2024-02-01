@@ -8,17 +8,17 @@ from django_rest_passwordreset.signals import reset_password_token_created
 from .tasks import send_msg
 from .models import ConfirmEmailToken, User
 
-new_order = Signal()
-new_user_registered = Signal()
+# new_order = Signal()
+# new_user_registered = Signal()
 
 
-@receiver(post_save, sender=User)
-def new_user_registered_signal(sender: Type[User], instance: User, created: bool, **kwargs):
-    if created and not instance.is_active:
-        token, _ = ConfirmEmailToken.objects.get_or_create(user_id=instance.pk)
-        msg = EmailMultiAlternatives(
-            f"Token for {instance.email}", token.key, settings.EMAIL_HOST_USER, [instance.email])
-        msg.send()
+# @receiver(post_save, sender=User)
+# def new_user_registered_signal(sender: Type[User], instance: User, created: bool, **kwargs):
+#     if created and not instance.is_active:
+#         token, _ = ConfirmEmailToken.objects.get_or_create(user_id=instance.pk)
+#         msg = EmailMultiAlternatives(
+#             f"Token for {instance.email}", token.key, settings.EMAIL_HOST_USER, [instance.email])
+#         msg.send()
 
 
 # @receiver(post_save, sender=User)
@@ -32,12 +32,12 @@ def new_user_registered_signal(sender: Type[User], instance: User, created: bool
 #             to_email=[instance.email],
 #         )
 
-@receiver(new_order)
-def new_order_signal(user_id, **kwargs):
-    user = User.objects.get(id=user_id)
-    msg = EmailMultiAlternatives(
-        "Updating the order status", 'The order has been formed', settings.EMAIL_HOST_USER, [user.email])
-    msg.send()
+# @receiver(new_order)
+# def new_order_signal(user_id, **kwargs):
+#     user = User.objects.get(id=user_id)
+#     msg = EmailMultiAlternatives(
+#         "Updating the order status", 'The order has been formed', settings.EMAIL_HOST_USER, [user.email])
+#     msg.send()
 
 
 # @receiver(new_order)

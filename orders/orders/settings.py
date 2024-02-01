@@ -85,11 +85,11 @@ WSGI_APPLICATION = "orders.wsgi.application"
 DATABASES = {
     "default": {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'NAME': os.getenv('POSTGRES_DB'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('POSTGRES_HOST'),
+        'PORT': '5432',
     }
 }
 
@@ -155,29 +155,11 @@ EMAIL_PORT = '465'
 EMAIL_USE_SSL = True
 SERVER_EMAIL = EMAIL_HOST_USER
 
-
-# Celery Settings:
-
-# https://docs.celeryproject.org/en/stable/userguide/configuration.html#accept-content
-# https://docs.celeryproject.org/en/stable/userguide/configuration.html#result-accept-content
-CELERY_ACCEPT_CONTENT = ["json", "pickle"]
-CELERY_RESULT_ACCEPT_CONTENT = CELERY_ACCEPT_CONTENT.copy()
-
-# https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-compression
-# https://docs.celeryproject.org/en/stable/userguide/configuration.html#result-compression
-CELERY_TASK_COMPRESSION = "lzma"
-CELERY_RESULT_COMPRESSION = CELERY_TASK_COMPRESSION
-
-# https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-serializer
-# https://docs.celeryproject.org/en/stable/userguide/configuration.html#result-serializer
-CELERY_TASK_SERIALIZER = "pickle"
-CELERY_RESULT_SERIALIZER = CELERY_TASK_SERIALIZER
-
-# https://docs.celeryproject.org/en/stable/userguide/configuration.html#task-ignore-result
-CELERY_TASK_IGNORE_RESULT = True
-
-APPEND_SLASH = False
-
 # CELERY_BROKER_URL = 'redis://127.0.0.1'
 # CELERY_BROKER_TRANSPORT = 'redis'
 # CELERY_BROKER_BACKEND = 'django-db'
+# Celery settings
+
+REDIS_HOST = os.getenv("REDIS_HOST")
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:6379/1"
+CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:6379/2"

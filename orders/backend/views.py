@@ -13,7 +13,8 @@ from .models import Shop, Category, Product, ProductInfo, Contact, ConfirmEmailT
     ProductParameter, Parameter
 from .serializers import CategorySerializer, ShopSerializer, ProductSerializer, ProductInfoSerializer, \
     ContactSerializer, UserSerializer, OrderSerializer, OrderItemSerializer
-from .signals import new_order
+# from .signals import new_order
+from .tasks import send_msg
 
 
 class ShopView(ListAPIView):
@@ -62,6 +63,11 @@ class RegisterUserView(APIView):
                     user = serializer.save()
                     user.set_password(request.data['password'])
                     user.save()
+                    token, _ = ConfirmEmailToken.objects.get_or_create(user_id=user.id)
+                    subject = f'Password token for {token.user.email}'
+                    body = token.key
+                    to_email = [token.user.email]
+                    send_msg.delay(subject, body, to_email)
                     return Response('User registered')
                 else:
                     return Response(serializer.errors)
@@ -229,7 +235,10 @@ class OrderView(APIView):
                 return Response('Bad')
             else:
                 if is_update:
-                    new_order.send(sender=self.__class__, user_id=request.user.id)
+                    subject = 'Updating the order status'
+                    body = 'The order has been formed'
+                    to_email = [request.user.email]
+                    send_msg.delay(subject, body, to_email)
                     return Response('Very Good')
         return Response('Very Bad')
 
@@ -281,51 +290,31 @@ class ShopUpdate(APIView):
         if request.user.type != 'SP':
             return Response('Only shop', status=403)
         url = request.data.get('url')
-        stream = get(url).content
-        data = load_yaml(stream, Loader=Loader)
-        shop, _ = Shop.objects.get_or_create(name=data['shop'], user_id=request.user.id)
-        for category in data['categories']:
-            category_obj, _ = Category.objects.get_or_create(id=category['id'], name=category['name'])
-            category_obj.shops.add(shop.id)
-            category_obj.save()
-        ProductInfo.objects.filter(shop_id=shop.id).delete()
-        for item in data['goods']:
-            product, _ = Product.objects.get_or_create(name=item['name'], category=item['category'])
-            product_info = ProductInfo.objects.get_or_create(
-                product_id=product.id,
-                model=item['model'],
-                price=item['price'],
-                price_rrc=item['price_rrc'],
-                quantity=item['quantity'],
-                shop_id=shop.id
-            )
-            for name, value in item['parameters'].items:
-                parameter_obj, _ = Parameter.objects.get_or_create(name=name)
-                ProductParameter.objects.create(
-                    product_info_id=product_info.id,
-                    parameter_id=parameter_obj.id,
-                    value=value
+        if url:
+            stream = get(url).content
+            data = load_yaml(stream, Loader=Loader)
+            shop, _ = Shop.objects.get_or_create(name=data['shop'], user_id=request.user.id)
+            for category in data['categories']:
+                category_obj, _ = Category.objects.get_or_create(id=category['id'], name=category['name'])
+                category_obj.shops.add(shop.id)
+                category_obj.save()
+            ProductInfo.objects.filter(shop_id=shop.id).delete()
+            for item in data['goods']:
+                product, _ = Product.objects.get_or_create(name=item['name'], category_id=item['category'])
+                product_info = ProductInfo.objects.create(
+                    product_id=product.id,
+                    model=item['model'],
+                    price=item['price'],
+                    price_rrc=item['price_rrc'],
+                    quantity=item['quantity'],
+                    shop_id=shop.id
                 )
+                for name, value in item['parameters'].items():
+                    parameter_obj, _ = Parameter.objects.get_or_create(name=name)
+                    ProductParameter.objects.create(
+                        product_info_id=product_info.id,
+                        parameter_id=parameter_obj.id,
+                        value=value
+                    )
             return Response('Good')
         return Response('Bad')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
