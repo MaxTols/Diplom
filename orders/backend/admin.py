@@ -7,7 +7,7 @@ from .models import User, Shop, Category, Product, ProductInfo, Order, OrderItem
 @admin.register(User)
 class UserAdmin(UserAdmin):
     model = User
-    list_display = ['username', 'email', ]
+    list_display = ['username', 'email', 'phone']
 
 
 @admin.register(Shop)
@@ -42,7 +42,7 @@ class OrderItemAdmin(admin.ModelAdmin):
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
-    list_display = ['phone', 'city', 'street', 'house', 'building', 'structure', 'apartment', ]
+    list_display = ['city', 'street', 'house', 'building', 'structure', 'apartment', ]
 
 
 @admin.register(ConfirmEmailToken)

@@ -12,6 +12,7 @@ class User(AbstractUser):
     username = models.CharField(max_length=50, unique=True)
     is_active = models.BooleanField(default=False)
     type = models.CharField(max_length=2, choices=Status.choices, default='BR')
+    phone = models.CharField(max_length=20)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
@@ -132,6 +133,29 @@ class ProductParameter(models.Model):
         verbose_name_plural = "Product parameters"
 
 
+class Contact(models.Model):
+    city = models.CharField(max_length=80)
+    street = models.CharField(max_length=100)
+    house = models.CharField(max_length=10)
+    building = models.CharField(max_length=5, blank=True)
+    structure = models.CharField(max_length=5, blank=True)
+    apartment = models.CharField(max_length=10, blank=True)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="contacts",
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        verbose_name = "Contact"
+        verbose_name_plural = "Contacts"
+
+    def __str__(self):
+        return f"{self.city} {self.street}"
+
+
 class Order(models.Model):
 
     class Status(models.TextChoices):
@@ -150,6 +174,13 @@ class Order(models.Model):
         related_name="orders",
         blank=True,
         null=True,
+    )
+    contact = models.ForeignKey(
+        Contact,
+        on_delete=models.CASCADE,
+        related_name="orders",
+        blank=True,
+        null=True
     )
 
     class Meta:
@@ -177,30 +208,6 @@ class OrderItem(models.Model):
     class Meta:
         verbose_name = "Order item"
         verbose_name_plural = "Order items"
-
-
-class Contact(models.Model):
-    phone = models.CharField(max_length=20)
-    city = models.CharField(max_length=80)
-    street = models.CharField(max_length=100)
-    house = models.CharField(max_length=10)
-    building = models.CharField(max_length=5, blank=True)
-    structure = models.CharField(max_length=5, blank=True)
-    apartment = models.CharField(max_length=10, blank=True)
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="contacts",
-        blank=True,
-        null=True,
-    )
-
-    class Meta:
-        verbose_name = "Contact"
-        verbose_name_plural = "Contacts"
-
-    def __str__(self):
-        return f"{self.city} {self.street}"
 
 
 class ConfirmEmailToken(models.Model):

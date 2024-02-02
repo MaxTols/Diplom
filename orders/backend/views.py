@@ -8,146 +8,151 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from requests import get
 from yaml import load as load_yaml, Loader
+from ujson import loads as load_json
 
 from .models import Shop, Category, Product, ProductInfo, Contact, ConfirmEmailToken, Order, OrderItem,\
     ProductParameter, Parameter
 from .serializers import CategorySerializer, ShopSerializer, ProductSerializer, ProductInfoSerializer, \
     ContactSerializer, UserSerializer, OrderSerializer, OrderItemSerializer
-# from .signals import new_order
-from .tasks import send_msg
-
-
-class ShopView(ListAPIView):
-    queryset = Shop.objects.all()
-    serializer_class = ShopSerializer
-
-
-class CategoryView(ListAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-
-
-class ProductView(ListAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-
-
-class ProductInfoView(ListAPIView):
-    def get(self, request, *args, **kwargs):
-        shop_id = request.GET.get("shop_id")
-        product_id = request.GET.get("product_id")
-        list_id = {'shop_id': shop_id, 'product_id': product_id}
-        for key, value in list_id.items():
-            if value is None:
-                return Response(f'Not added {key}')
-        else:
-            queryset = ProductInfo.objects.filter(
-                shop_id=shop_id, product_id=product_id)
-            serializer = ProductInfoSerializer(queryset, many=True)
-            return Response(serializer.data)
+from .tasks import send_msg_task
+from .tasks import import_data
 
 
 class RegisterUserView(APIView):
+
     def post(self, request, *args, **kwargs):
-        if {'first_name', 'last_name', 'email', 'password', 'username'}.issubset(request.data):
-            try:
-                validate_password(request.data['password'])
-            except Exception as password_error:
-                error_array = []
-                for item in password_error:
-                    error_array.append(item)
-                return Response(error_array)
+
+        if not {'first_name', 'last_name', 'email', 'password', 'username', 'phone'}.issubset(request.data):
+            return Response('Not added all arguments', status=400)
+
+        try:
+            validate_password(request.data['password'])
+
+        except Exception as password_error:
+            return Response({'password': str(password_error)}, status=400)
+
+        else:
+            user_serializer = UserSerializer(data=request.data)
+            if user_serializer.is_valid():
+                user = user_serializer.save()
+                user.set_password(request.data['password'])
+                user.save()
+
+                token, _ = ConfirmEmailToken.objects.get_or_create(user_id=user.id)
+                subject = f'Password token for {token.user.email}'
+                body = token.key
+                to_email = [token.user.email]
+                send_msg_task.delay(subject, body, to_email)
+                return Response('User is registered', status=201)
+
             else:
-                serializer = UserSerializer(data=request.data)
-                if serializer.is_valid():
-                    user = serializer.save()
-                    user.set_password(request.data['password'])
-                    user.save()
-                    token, _ = ConfirmEmailToken.objects.get_or_create(user_id=user.id)
-                    subject = f'Password token for {token.user.email}'
-                    body = token.key
-                    to_email = [token.user.email]
-                    send_msg.delay(subject, body, to_email)
-                    return Response('User registered')
-                else:
-                    return Response(serializer.errors)
-        return Response('Not added all arguments')
+                return Response(user_serializer.errors, status=401)
 
 
 class ConfirmUserView(APIView):
-    def post(self, request, *args, **kwargs):
-        if {'email', 'token'}.issubset(request.data):
-            token = ConfirmEmailToken.objects.filter(
-                user__email=request.data['email'],
-                key=request.data['token']).first()
 
-            if token:
-                token.user.is_active = True
-                token.user.save()
-                token.delete()
-                return Response('User is confirmed')
-            else:
-                return Response('Incorrectly token or email')
+    def post(self, request, *args, **kwargs):
+
+        if not {'email', 'token'}.issubset(request.data):
+            return Response('No added all values', status=400)
+
+        token = ConfirmEmailToken.objects.filter(
+            user__email=request.data['email'],
+            key=request.data['token']).first()
+        if token:
+            token.user.is_active = True
+            token.user.save()
+            token.delete()
+            return Response('User is confirmed')
+
         else:
-            return Response('No added all values')
+            return Response('Incorrectly token or email', status=400)
 
 
 class LoginAccountView(APIView):
+
     def post(self, request, *args, **kwargs):
-        if {'email', 'password'}.issubset(request.data):
-            user = authenticate(request, email=request.data['email'], password=request.data['password'])
-            if user is not None:
-                if user.is_active:
-                    token, _ = Token.objects.get_or_create(user=user)
-                    return Response(token.key)
-            return Response('Incorrectly data')
-        return Response('No added all values')
+
+        if not {'email', 'password'}.issubset(request.data):
+            return Response('No added all values', status=400)
+
+        user = authenticate(
+            request, email=request.data['email'], password=request.data['password']
+        )
+        if user is not None:
+            if user.is_active:
+                token, _ = Token.objects.get_or_create(user=user)
+                return Response({'Token': token.key})
+
+        return Response('Incorrectly data', status=400)
 
 
 class AccountDetailsView(APIView):
+
     def get(self, request, *args, **kwargs):
+
         if not request.user.is_authenticated:
             return Response('Log in required', status=403)
 
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data)
+        user_serializer = UserSerializer(request.user)
+        return Response(user_serializer.data)
 
     def post(self, request, *args, **kwargs):
+
         if not request.user.is_authenticated:
             return Response('Log in required', status=403)
-        serializer = UserSerializer(request.user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
+
+        if {'password'} in request.data:
+            errors = {}
+            try:
+                validate_password((request.data['password']))
+            except Exception as password_error:
+                return Response({'password': password_error}, status=400)
+
+            else:
+                request.user.set_password(request.data['password'])
+
+        user_serializer = UserSerializer(request.user, data=request.data)
+        if user_serializer.is_valid():
+            user_serializer.save()
             return Response('Account details is updated')
         else:
-            return Response(serializer.errors)
+            return Response(user_serializer.errors, status=400)
 
 
 class ContactView(APIView):
+
     def get(self, request, *args, **kwargs):
+
         if not request.user.is_authenticated:
             return Response('Log in required', status=403)
+
         contact = Contact.objects.filter(user_id=request.user.id)
         serializer = ContactSerializer(contact, many=True)
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
+
         if not request.user.is_authenticated:
             return Response('Log in required', status=403)
-        contact = {'phone', 'city', 'street', 'house', 'building', 'structure', 'apartment'}
-        if contact.issubset(request.data):
-            request.data.update({'user': request.user.id})
-            serializer = ContactSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            else:
-                return Response(serializer.errors)
-        return Response('No added all contacts')
+
+        if not {'city', 'street', 'house'}.issubset(request.data):
+            return Response('No added all contacts', status=400)
+
+        request.data.update({'user': request.user.id})
+        print(request.data)
+        serializer = ContactSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=400)
 
     def put(self, request, *args, **kwargs):
+
         if not request.user.is_authenticated:
             return Response('Log in required', status=403)
+
         contact_id = request.data.get('contact_id')
         contact = Contact.objects.filter(id=contact_id, user_id=request.user.id).first()
         serializer = ContactSerializer(contact, data=request.data)
@@ -155,11 +160,13 @@ class ContactView(APIView):
             serializer.save()
             return Response('Contact is updated')
         else:
-            return Response(serializer.errors)
+            return Response(serializer.errors, status=400)
 
     def delete(self, request, *args, **kwargs):
+
         if not request.user.is_authenticated:
             return Response('Log in required', status=403)
+
         contact_id = request.data.get('contact_id')
         contact = Contact.objects.filter(id=contact_id, user_id=request.user.id).delete()
         serializer = ContactSerializer(contact, data=request.data)
@@ -168,87 +175,16 @@ class ContactView(APIView):
         return Response('Contact is deleted')
 
 
-class BasketView(APIView):
+class SellerOrdersView(APIView):
+
     def get(self, request, *args, **kwargs):
+
         if not request.user.is_authenticated:
             return Response('Log in required', status=403)
-        basket = Order.objects.filter(
-            user_id=request.user.id, status='BT').prefetch_related(
-            'order_items__product_info__product__category',
-            'order_items__product_info__product_parameters__parameter').annotate(
-            total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price'))).distinct()
-        serializer = OrderSerializer(basket, many=True)
-        return Response(serializer.data)
 
-    def post(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return Response('Log in required', status=403)
-        basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='BT')
-        item = request.data
-        item.update({'order': basket.id})
-        serializer = OrderItemSerializer(data=item)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
-
-    def put(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return Response('Log in required', status=403)
-        basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='BT')
-        item = request.data
-        obj = OrderItem.objects.filter(order_id=basket.id, id=item['id']).update(
-            quantity=item['quantity'])
-        return Response(obj)
-
-    def delete(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return Response('Log in required', status=403)
-        basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='BT')
-        item = OrderItem.objects.filter(order_id=basket.id, id=request.data['id']).delete()
-        # serializer = OrderItemSerializer(item, many=True)
-        # return Response(serializer.data)
-        print(item)
-        return Response('Ok')
-
-
-class OrderView(APIView):
-    def get(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return Response('Log in required', status=403)
-        order = Order.objects.filter(user_id=request.user.id).exclude(status='BT').prefetch_related(
-            'order_items__product_info__product__category',
-            'order_items__product_info__product_parameters__parameter').annotate(
-            total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price'))).distinct()
-        serializer = OrderSerializer(order, many=True)
-        return Response(serializer.data)
-
-    def post(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return Response('Log in required', status=403)
-        if {'id', }.issubset(request.data):
-            try:
-                is_update = Order.objects.filter(
-                    user_id=request.user.id, id=request.data['id']).update(status='CR')
-            except IntegrityError as error:
-                print(error)
-                return Response('Bad')
-            else:
-                if is_update:
-                    subject = 'Updating the order status'
-                    body = 'The order has been formed'
-                    to_email = [request.user.email]
-                    send_msg.delay(subject, body, to_email)
-                    return Response('Very Good')
-        return Response('Very Bad')
-
-
-class ShopOrdersView(APIView):
-    def get(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return Response('Log in required', status=403)
         if request.user.type != 'SP':
             return Response('Only shop', status=403)
+
         order = Order.objects.filter(
             order_items__product_info__shop__user_id=request.user.id).exclude(status='BT').prefetch_related(
             'order_items__product_info__product__category',
@@ -258,63 +194,234 @@ class ShopOrdersView(APIView):
         return Response(serializer.data)
 
 
-class ShopStatusView(APIView):
+class SellerStatusView(APIView):
+
     def get(self, request, *args, **kwargs):
+
         if not request.user.is_authenticated:
             return Response('Log in required', status=403)
+
         if request.user.type != 'SP':
             return Response('Only shop', status=403)
+
         shop = request.user.shop
         serializer = ShopSerializer(shop)
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
+
         if not request.user.is_authenticated:
             return Response('Log in required', status=403)
+
         if request.user.type != 'SP':
             return Response('Only shop', status=403)
+
         shop = Shop.objects.filter(user_id=request.user.id)
         status_dict = {'CL': 'OP', 'OP': 'CL'}
-        for atr in shop:
-            status, name = atr.status, atr.name
+        for item in shop:
+            status, name = item.status, item.name
             status_reverse = status_dict[status]
             Shop.objects.filter(
                 user_id=request.user.id).update(status=status_reverse)
             return Response(f'Status {name} is {status_reverse}')
 
 
-class ShopUpdate(APIView):
+class SellerUpdate(APIView):
+
     def post(self, request, *args, **kwargs):
+
         if not request.user.is_authenticated:
             return Response('Log in required', status=403)
+
         if request.user.type != 'SP':
             return Response('Only shop', status=403)
+
         url = request.data.get('url')
         if url:
-            stream = get(url).content
-            data = load_yaml(stream, Loader=Loader)
-            shop, _ = Shop.objects.get_or_create(name=data['shop'], user_id=request.user.id)
-            for category in data['categories']:
-                category_obj, _ = Category.objects.get_or_create(id=category['id'], name=category['name'])
-                category_obj.shops.add(shop.id)
-                category_obj.save()
-            ProductInfo.objects.filter(shop_id=shop.id).delete()
-            for item in data['goods']:
-                product, _ = Product.objects.get_or_create(name=item['name'], category_id=item['category'])
-                product_info = ProductInfo.objects.create(
-                    product_id=product.id,
-                    model=item['model'],
-                    price=item['price'],
-                    price_rrc=item['price_rrc'],
-                    quantity=item['quantity'],
-                    shop_id=shop.id
-                )
-                for name, value in item['parameters'].items():
-                    parameter_obj, _ = Parameter.objects.get_or_create(name=name)
-                    ProductParameter.objects.create(
-                        product_info_id=product_info.id,
-                        parameter_id=parameter_obj.id,
-                        value=value
-                    )
-            return Response('Good')
-        return Response('Bad')
+            print('Start import')
+            import_data.delay(url=url, user_id=request.user.id)
+            return Response('Data is updated')
+
+        return Response('No added all arguments', status=400)
+
+        # stream = get(url).content
+        # data = load_yaml(stream, Loader=Loader)
+        # shop, _ = Shop.objects.get_or_create(name=data['shop'], user_id=request.user.id)
+        # for category in data['categories']:
+        #     category_obj, _ = Category.objects.get_or_create(id=category['id'], name=category['name'])
+        #     category_obj.shops.add(shop.id)
+        #     category_obj.save()
+        # ProductInfo.objects.filter(shop_id=shop.id).delete()
+        # for item in data['goods']:
+        #     product, _ = Product.objects.get_or_create(name=item['name'], category_id=item['category'])
+        #     product_info = ProductInfo.objects.create(
+        #         product_id=product.id,
+        #         model=item['model'],
+        #         price=item['price'],
+        #         price_rrc=item['price_rrc'],
+        #         quantity=item['quantity'],
+        #         shop_id=shop.id
+        #     )
+        #     for name, value in item['parameters'].items():
+        #         parameter_obj, _ = Parameter.objects.get_or_create(name=name)
+        #         ProductParameter.objects.create(
+        #             product_info_id=product_info.id,
+        #             parameter_id=parameter_obj.id,
+        #             value=value
+        #         )
+    #     return Response('Good')
+    # return Response('Bad')
+
+
+class ShopView(ListAPIView):
+
+    queryset = Shop.objects.all()
+    serializer_class = ShopSerializer
+
+
+class CategoryView(ListAPIView):
+
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
+class ProductView(ListAPIView):
+
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+
+class ProductInfoView(ListAPIView):
+
+    def get(self, request, *args, **kwargs):
+
+        shop_id = request.GET.get("shop_id")
+        product_id = request.GET.get("product_id")
+        list_id = {'shop_id': shop_id, 'product_id': product_id}
+        for key, value in list_id.items():
+            if value is None:
+                return Response(f'Not added {key}')
+
+        queryset = ProductInfo.objects.filter(
+            shop_id=shop_id, product_id=product_id).select_related(
+            'shop', 'product__category').prefetch_related(
+            'product_parameters__parameter').distinct()
+        serializer = ProductInfoSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class BasketView(APIView):
+
+    def get(self, request, *args, **kwargs):
+
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
+
+        basket = Order.objects.filter(
+            user_id=request.user.id, status='BT').prefetch_related(
+            'order_items__product_info__product__category',
+            'order_items__product_info__product_parameters__parameter').annotate(
+            total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price'))).distinct()
+        serializer = OrderSerializer(basket, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
+
+        items = request.data.get('items')
+        if not items:
+            return Response('No added all arguments', status=400)
+
+        basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='BT')
+        obj_created = 0
+        for item in items:
+            item.update({'order': basket.id})
+            serializer = OrderItemSerializer(data=item)
+            if serializer.is_valid():
+                try:
+                    serializer.save()
+                except IntegrityError as error:
+                    return Response({'Errors': str(error)}, status=400)
+                else:
+                    obj_created += 1
+            else:
+                return Response(serializer.errors, status=400)
+
+        return Response(f'Created {obj_created} objects')
+
+    def put(self, request, *args, **kwargs):
+
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
+
+        items = request.data.get('items')
+        if items:
+            try:
+                items = load_json(items)
+            except ValueError:
+                return Response({'Errors': 'Incorrect request format'}, status=400)
+            else:
+                basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='BT')
+                obj_updated = 0
+                for item in items:
+                    if type(item['id']) == int and type(item['quantity']) == int:
+                        obj_updated += OrderItem.objects.filter(order_id=basket.id, id=item['id']).update(
+                            quantity=item['quantity'])
+
+                return Response(f'Updated {obj_updated} objects')
+
+        return Response('No added all arguments', status=400)
+
+    def delete(self, request, *args, **kwargs):
+
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
+
+        item = request.data.get(['item'])
+        if type(item) == int:
+            basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='BT')
+            item = OrderItem.objects.filter(order_id=basket.id, id=request.data['id']).delete()
+
+            return Response(f'Object {item} is deleted')
+
+        return Response('No added all arguments', status=400)
+
+
+class OrderView(APIView):
+
+    def get(self, request, *args, **kwargs):
+
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
+
+        order = Order.objects.filter(user_id=request.user.id).exclude(status='BT').prefetch_related(
+            'order_items__product_info__product__category',
+            'order_items__product_info__product_parameters__parameter').annotate(
+            total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price'))).distinct()
+        serializer = OrderSerializer(order, many=True)
+
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+
+        if not request.user.is_authenticated:
+            return Response('Log in required', status=403)
+
+        if not {'id', 'contact'}.issubset(request.data):
+            return Response('No added all arguments', status=400)
+
+        try:
+            is_updated = Order.objects.filter(
+                user_id=request.user.id, id=request.data['id']).update(status='CR')
+        except IntegrityError:
+            return Response('Incorrect arguments', status=400)
+
+        else:
+            if is_updated:
+                subject = 'Updating the order status'
+                body = f'The order {request.data["id"]} has been formed'
+                to_email = [request.user.email]
+                send_msg_task.delay(subject, body, to_email)
+                return Response('Order is created')

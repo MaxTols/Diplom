@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import User, Shop, Category, Product, ProductInfo, Parameter, ProductParameter, Order, OrderItem, Contact
-
+from rest_framework.exceptions import ValidationError
 
 class ShopSerializer(serializers.ModelSerializer):
     class Meta:
@@ -43,9 +43,14 @@ class ProductParameterSerializer(serializers.ModelSerializer):
 
 
 class ContactSerializer(serializers.ModelSerializer):
+    # def validate(self, attrs):
+    #     contacts_count = Contact.objects.filter(user_id=self.initial_data['user']).count()
+    #     if contacts_count >= 5:
+    #         raise ValidationError('You have maximum quantity of contacts')
+
     class Meta:
         model = Contact
-        fields = ('id', 'phone', 'city', 'street', 'house', 'building', 'structure', 'apartment', 'user')
+        fields = ('id', 'city', 'street', 'house', 'building', 'structure', 'apartment', 'user')
         read_only_fields = ('id',)
 
 
@@ -54,17 +59,18 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'username', 'type', 'contact')
+        fields = ('id', 'first_name', 'last_name', 'email', 'username', 'phone', 'type', 'contact')
         read_only_fields = ('id',)
 
 
 class ProductInfoSerializer(serializers.ModelSerializer):
     product_parameters = ProductParameterSerializer(read_only=True, many=True)
     product = ProductSerializer(read_only=True)
+    shop = ShopSerializer(read_only=True)
 
     class Meta:
         model = ProductInfo
-        fields = ('id', 'model', 'shop', 'quantity', 'price', 'price_rrc', 'product', 'product_parameters')
+        fields = ('id', 'model', 'quantity', 'price', 'price_rrc', 'shop', 'product', 'product_parameters')
         read_only_fields = ('id',)
 
 

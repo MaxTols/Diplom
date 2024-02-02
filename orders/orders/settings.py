@@ -25,10 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-+vv#ax$vn=glxk3tynbx0v@c8h83me_)#9n=r6+(cfx(n9can6"
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG')
 
 ALLOWED_HOSTS = ["*"]
 
@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     "backend.apps.BackendConfig",
     "rest_framework",
     "rest_framework.authtoken",
-    # "django_rest_passwordreset",
+    "django_rest_passwordreset",
 ]
 
 MIDDLEWARE = [
@@ -89,7 +89,7 @@ DATABASES = {
         'USER': os.getenv('POSTGRES_USER'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         'HOST': os.getenv('POSTGRES_HOST'),
-        'PORT': '5432',
+        'PORT': os.getenv('POSTGRES_PORT'),
     }
 }
 
@@ -143,23 +143,21 @@ REST_FRAMEWORK = {
     )
 }
 
+# Celery settings
+
+REDIS_HOST = os.getenv('REDIS_HOST')
+CELERY_BROKER_URL = f'redis://{REDIS_HOST}:6379/1'
+CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:6379/2'
+
+# Email settings
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_USE_TLS = True
 
 EMAIL_HOST = 'smtp.mail.ru'
 
-EMAIL_HOST_USER = 'netology.diplom@mail.ru'
-EMAIL_HOST_PASSWORD = 'RANGVKPEZ61jsCgTbsbG'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = '465'
 EMAIL_USE_SSL = True
 SERVER_EMAIL = EMAIL_HOST_USER
-
-# CELERY_BROKER_URL = 'redis://127.0.0.1'
-# CELERY_BROKER_TRANSPORT = 'redis'
-# CELERY_BROKER_BACKEND = 'django-db'
-# Celery settings
-
-REDIS_HOST = os.getenv("REDIS_HOST")
-CELERY_BROKER_URL = f"redis://{REDIS_HOST}:6379/1"
-CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:6379/2"
