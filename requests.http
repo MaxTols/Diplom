@@ -2,6 +2,173 @@
 
 @baseUrl = http://localhost:8000/backend
 
+
+# регистрация пользователя
+POST {{baseUrl}}/user/register/
+Content-Type: application/json
+
+{
+  "first_name": "max",
+  "last_name": "tols", 
+  "email": "tolstikov-95@inbox.ru", 
+  "password": "admin1234567",
+  "username": "admin123",
+  "phone": "89001234567",
+  "type": "BR"
+}
+
+###
+
+# подтверждение пользователя
+POST {{baseUrl}}/user/register/confirm/
+Content-Type: application/json
+
+{
+  "email": "tolstikov-95@inbox.ru", 
+  "token": "f0725b610a225d65cf846324d051e453a"
+}
+
+###
+
+# логин пользователя
+POST {{baseUrl}}/user/login/
+Content-Type: application/json
+
+{
+  "email": "tolstikov-95@inbox.ru",
+  "password": "admin1234567"
+}
+
+###
+
+# детали пользователя
+GET {{baseUrl}}/user/details/
+Content-Type: application/json
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+###
+
+# изменение деталей пользователя
+POST {{baseUrl}}/user/details/
+Content-Type: application/json
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+{
+  "first_name": "maxsy",
+  "last_name": "tolsy", 
+  "email": "tolstikov-9995@inbox.ru", 
+  "password": "admin1234567",
+  "phone": "87598598",
+  "username": "admin12345"
+}
+
+
+###
+
+# получение контактов
+GET {{baseUrl}}/user/contact/
+Content-Type: application/json
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+###
+
+# создание контакта
+POST {{baseUrl}}/user/contact/
+Content-Type: application/json
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+{
+  "city": "Moscow",
+  "street": "Tverskaya",
+  "house": "10",
+  "building": "1",
+  "structure": "2",
+  "apartment": "124"
+}
+
+###
+
+# изменение контакта
+PUT {{baseUrl}}/user/contact/
+Content-Type: application/json
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+{
+  "contact_id": "1",
+  "city": "Moscow",
+  "street": "Tverskaya",
+  "house": "10",
+  "building": "100",
+  "structure": "2",
+  "apartment": "100"
+}
+
+###
+
+# удаление контакта
+DELETE {{baseUrl}}/user/contact/
+Content-Type: application/json
+Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+{
+  "contact_id": "3"
+}
+
+###
+
+# восстановление пользователя
+POST {{baseUrl}}/user/reset_password/
+Content-Type: application/json
+
+{  
+  "email": "tolstikov-95@inbox.ru"
+}
+###
+
+# подтверждение пользователя
+POST {{baseUrl}}/user/reset_password/confirm/
+Content-Type: application/json
+
+{
+  "email": "tolstikov-95@inbox.ru",
+  "password": "qwerty_123",
+  "token": "2dbbcb7c484f03de95fbd486ca962325f2"
+}
+
+###
+
+# загрузка данных магазина
+POST {{baseUrl}}/seller/update/
+Content-Type: application/json
+Authorization: Token 273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+{
+  "url": "https://raw.githubusercontent.com/netology-code/pd-diplom/master/data/shop1.yaml"
+}
+
+###
+
+# получение статуса магазина
+GET {{baseUrl}}/seller/status/
+Content-Type: application/json
+Authorization: Token 273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+###
+
+# изменение статуса магазина
+POST {{baseUrl}}/seller/status/
+Content-Type: application/json
+Authorization: Token 273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+###
+
+# получение заказов магазином
+GET {{baseUrl}}/seller/orders/
+Content-Type: application/json
+Authorization: Token 273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
+
+###
+
 # получение магазинов
 GET {{baseUrl}}/shops/
 Content-Type: application/json
@@ -18,127 +185,14 @@ Content-Type: application/json
 GET {{baseUrl}}/products/
 Content-Type: application/json
 
-###
-# получение контактов
-GET {{baseUrl}}/contact/
-Content-Type: application/json
-Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
-
-###
-
-# создание контакта
-POST {{baseUrl}}/contact/
-Content-Type: application/json
-Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
-
-{
-  "phone": "89001234567",
-  "city": "Moscow",
-  "street": "Tverskaya",
-  "house": "10",
-  "building": "1",
-  "structure": "2",
-  "apartment": "124"
-}
-
-###
-
-# изменение контакта
-PUT {{baseUrl}}/contact/
-Content-Type: application/json
-Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
-
-{
-  "contact_id": "1",
-  "phone": "87598598",
-  "city": "Moscow",
-  "street": "Tverskaya",
-  "house": "10",
-  "building": "1",
-  "structure": "2",
-  "apartment": "100"
-
-}
-
-###
-
-# удаление контакта
-DELETE {{baseUrl}}/contact/
-Content-Type: application/json
-Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
-
-{
-  "contact_id": "1"
-}
 
 ###
 
 # получение информации о продукте
-GET {{baseUrl}}/product_info?shop_id=2&product_id=4216292
+GET {{baseUrl}}/product_info?shop_id=1&product_id=10
 Content-Type: application/json
 
 ###
-
-# регистрация пользователя
-POST {{baseUrl}}/register/
-Content-Type: application/json
-
-{
-  "first_name": "max",
-  "last_name": "tols",
-  "email": "tolstikov-95@inbox.ru",
-  "password": "admin1234567",
-  "username": "admin123",
-  "type": "SP"
-}
-
-###
-
-# подтверждение пользователя
-POST {{baseUrl}}/confirm/
-Content-Type: application/json
-
-{
-  "email": "tolstikov-95@inbox.ru",
-  "token": "6fcbfd8ad074"
-}
-
-###
-
-# логин пользователя
-POST {{baseUrl}}/login/
-Content-Type: application/json
-
-{
-  "email": "tolstikov-95@inbox.ru",
-  "password": "admin1234567"
-}
-
-###
-
-# детали пользователя
-GET {{baseUrl}}/account/
-Content-Type: application/json
-Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
-
-###
-
-# изменение деталей пользователя
-POST {{baseUrl}}/account/
-Content-Type: application/json
-Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
-
-{
-  "first_name": "maxsy",
-  "last_name": "tolsy",
-  "email": "tolstikov-995@inbox.ru",
-  "password": "admin1234567",
-  "username": "admin1234"
-}
-
-
-###############
-
 
 # получение товаров из корзины
 GET {{baseUrl}}/basket/
@@ -153,8 +207,8 @@ Content-Type: application/json
 Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
 
 {
-  "product_info": 3,
-  "quantity": 2
+  "items": 
+    [{"product_info": 5, "quantity": 4}, {"product_info": 6, "quantity": 1}]
 }
 
 ###
@@ -165,8 +219,8 @@ Content-Type: application/json
 Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
 
 {
-  "id": 4,
-  "quantity": 20
+  "items": 
+    [{"id": 1, "quantity": 1}, {"id": 2, "quantity": 2}]
 }
 
 ###
@@ -177,7 +231,7 @@ Content-Type: application/json
 Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
 
 {
-  "id": 19
+  "items": "1"
 }
 
 ###
@@ -195,28 +249,6 @@ Content-Type: application/json
 Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
 
 {
-  "id": 3,
-  "contact": 2
+  "id": 1, 
+  "contact": 4
 }
-
-###
-
-# получение заказов магазином
-GET {{baseUrl}}/shop/orders/
-Content-Type: application/json
-Authorization: Token 3eca308830f5b493f5324074ddcbe40976169843
-
-###
-
-# получение статуса магазина
-GET {{baseUrl}}/shop/status/
-Content-Type: application/json
-Authorization: Token 3eca308830f5b493f5324074ddcbe40976169843
-
-###
-
-# изменение статуса магазина
-
-POST {{baseUrl}}/shop/status/
-Content-Type: application/json
-Authorization: Token 3eca308830f5b493f5324074ddcbe40976169843

@@ -7,4 +7,3 @@ python-dotenv==1.0.0
 PyYAML==6.0.1
 requests==2.31.0
 redis==5.0.1
-ujson=5.9.0

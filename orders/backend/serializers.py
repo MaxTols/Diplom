@@ -1,20 +1,32 @@
 from rest_framework import serializers
 
-from .models import User, Shop, Category, Product, ProductInfo, Parameter, ProductParameter, Order, OrderItem, Contact
+from .models import (
+    User,
+    Shop,
+    Category,
+    Product,
+    ProductInfo,
+    Parameter,
+    ProductParameter,
+    Order,
+    OrderItem,
+    Contact,
+)
 from rest_framework.exceptions import ValidationError
+
 
 class ShopSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shop
-        fields = ('id', 'name', 'url', 'status')
-        read_only_fields = ('id',)
+        fields = ("id", "name", "url", "status")
+        read_only_fields = ("id",)
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('id', 'name')
-        read_only_fields = ('id',)
+        fields = ("id", "name")
+        read_only_fields = ("id",)
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -22,15 +34,15 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ('id', 'name', 'category')
-        read_only_fields = ('id',)
+        fields = ("id", "name", "category")
+        read_only_fields = ("id",)
 
 
 class ParameterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Parameter
-        fields = ('id', 'name')
-        read_only_fields = ('id',)
+        fields = ("id", "name")
+        read_only_fields = ("id",)
 
 
 class ProductParameterSerializer(serializers.ModelSerializer):
@@ -38,20 +50,33 @@ class ProductParameterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductParameter
-        fields = ('id', 'parameter', 'value')
-        read_only_fields = ('id',)
+        fields = ("id", "parameter", "value")
+        read_only_fields = ("id",)
 
 
 class ContactSerializer(serializers.ModelSerializer):
-    # def validate(self, attrs):
-    #     contacts_count = Contact.objects.filter(user_id=self.initial_data['user']).count()
-    #     if contacts_count >= 5:
-    #         raise ValidationError('You have maximum quantity of contacts')
+    def validate(self, data):
+        max_contacts = 5
+        data = super().validate(data)
+        contacts_count = Contact.objects.filter(user_id=data["user"].id).count()
+        if contacts_count >= max_contacts:
+            raise ValidationError(f"You have maximum contacts: {max_contacts}")
+        return data
 
     class Meta:
         model = Contact
-        fields = ('id', 'city', 'street', 'house', 'building', 'structure', 'apartment', 'user')
-        read_only_fields = ('id',)
+        fields = (
+            "id",
+            "city",
+            "street",
+            "house",
+            "building",
+            "structure",
+            "apartment",
+            "user",
+        )
+        read_only_fields = ("id",)
+        extra_kwargs = {"user": {"write_only": True}}
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -59,8 +84,17 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'username', 'phone', 'type', 'contact')
-        read_only_fields = ('id',)
+        fields = (
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+            "username",
+            "phone",
+            "type",
+            "contact",
+        )
+        read_only_fields = ("id",)
 
 
 class ProductInfoSerializer(serializers.ModelSerializer):
@@ -70,15 +104,24 @@ class ProductInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductInfo
-        fields = ('id', 'model', 'quantity', 'price', 'price_rrc', 'shop', 'product', 'product_parameters')
-        read_only_fields = ('id',)
+        fields = (
+            "id",
+            "model",
+            "quantity",
+            "price",
+            "price_rrc",
+            "shop",
+            "product",
+            "product_parameters",
+        )
+        read_only_fields = ("id",)
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
-        fields = ('id', 'quantity', 'order', 'product_info')
-        read_only_fields = ('id',)
+        fields = ("id", "quantity", "order", "product_info")
+        read_only_fields = ("id",)
 
 
 class OrderItemCreateSerializer(OrderItemSerializer):
@@ -91,5 +134,5 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('id', 'total_sum', 'dt', 'status', 'user', 'order_items')
-        read_only_fields = ('id',)
+        fields = ("id", "total_sum", "dt", "status", "user", "order_items")
+        read_only_fields = ("id",)
