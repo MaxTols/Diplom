@@ -37,4 +37,4 @@
 - API: [http://127.0.0.1:8000/backend/](http://127.0.0.1:8000/backend/)
 - Django admin: [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)
 - pgAdmin: [http://127.0.0.1:5050/](http://127.0.0.1:5050/)
-- Документация по запросам: [https://github.com/MaxTols/Diplom/blob/master/requests.http](https://github.com/MaxTols/Diplom/blob/master/requests.http)
+- Документация по запросам: [requests.http](requests.http)
