@@ -10,7 +10,6 @@
     name: Смартфоны
     shops:
     - 1
-    - 2
 - model: backend.category
   pk: 2
   fields:
@@ -25,11 +24,6 @@
     name: Flash-накопители
     shops:
     - 1
-- model: backend.shop
-  pk: 2
-  fields:
-    name: goods
-    url: https://www.megamarket.ru/
 - model: backend.product
   pk: 1
   fields:
@@ -45,7 +39,7 @@
     price_rrc: 116990
     quantity: 14
     product_id: 4216292
-    shop_id: 2
+    shop_id: 1
 - model: backend.parameter
   pk: 1
   fields:
@@ -109,7 +103,7 @@
     price_rrc: 69990
     quantity: 9
     product_id: 4216313
-    shop_id: 2
+    shop_id: 1
 - model: backend.productparameter
   pk: 5
   fields:
@@ -153,7 +147,7 @@
     price_rrc: 69990
     quantity: 5
     product_id: 4216226
-    shop_id: 2
+    shop_id: 1
 - model: backend.productparameter
   pk: 9
   fields:
@@ -197,7 +191,7 @@
     price_rrc: 64990
     quantity: 7
     product_id: 4672670
-    shop_id: 2
+    shop_id: 1
 - model: backend.productparameter
   pk: 13
   fields:

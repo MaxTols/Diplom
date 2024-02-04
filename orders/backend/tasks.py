@@ -1,11 +1,11 @@
 from django.core.mail import EmailMultiAlternatives
-from celery import shared_task
-from .models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter
 from django.conf import settings
 from django.core.validators import URLValidator
+from celery import shared_task
 from requests import get
 from yaml import Loader
 from yaml import load as load_yaml
+from .models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter
 
 
 @shared_task()
@@ -15,7 +15,7 @@ def send_msg_task(subject, body, to_email, from_email=settings.EMAIL_HOST_USER):
 
 
 @shared_task()
-def import_data(url, user_id):
+def import_data_task(url, user_id):
     validate_url = URLValidator()
     validate_url(url)
     stream = get(url).content

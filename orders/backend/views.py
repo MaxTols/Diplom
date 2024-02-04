@@ -27,8 +27,7 @@ from .serializers import (
     OrderSerializer,
     OrderItemSerializer,
 )
-from .tasks import send_msg_task
-from .tasks import import_data
+from .tasks import send_msg_task, import_data_task
 
 
 class RegisterUserView(APIView):
@@ -64,13 +63,13 @@ class RegisterUserView(APIView):
                 return Response("User is registered", status=201)
 
             else:
-                return Response(user_serializer.errors, status=401)
+                return Response(user_serializer.errors, status=400)
 
 
 class ConfirmUserView(APIView):
     def post(self, request, *args, **kwargs):
         if not {"email", "token"}.issubset(request.data):
-            return Response("No added all values", status=400)
+            return Response("No added all arguments", status=400)
 
         token = ConfirmEmailToken.objects.filter(
             user__email=request.data["email"], key=request.data["token"]
@@ -88,7 +87,7 @@ class ConfirmUserView(APIView):
 class LoginAccountView(APIView):
     def post(self, request, *args, **kwargs):
         if not {"email", "password"}.issubset(request.data):
-            return Response("No added all values", status=400)
+            return Response("No added all arguments", status=400)
 
         user = authenticate(
             request, email=request.data["email"], password=request.data["password"]
@@ -253,7 +252,7 @@ class SellerUpdate(APIView):
 
         url = request.data.get("url")
         if url:
-            import_data.delay(url=url, user_id=request.user.id)
+            import_data_task.delay(url=url, user_id=request.user.id)
             return Response("Data is updated")
 
         return Response("No added all arguments", status=400)
@@ -377,7 +376,7 @@ class BasketView(APIView):
 
             if obj_deleted:
                 del_count = OrderItem.objects.filter(query).delete()[0]
-                return Response(f"Object {del_count} is deleted")
+                return Response(f"Deleted {del_count} objects")
 
         return Response("No added all arguments", status=400)
 
@@ -425,7 +424,7 @@ class OrderView(APIView):
         else:
             if is_updated:
                 subject = "Updating the order status"
-                body = f'The order {request.data["id"]} has been formed'
+                body = f"The order {request.data['id']} has been formed"
                 to_email = [request.user.email]
                 send_msg_task.delay(subject, body, to_email)
                 return Response("Order is created")

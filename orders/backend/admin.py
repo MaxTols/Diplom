@@ -20,7 +20,6 @@ from .models import (
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
     model = User
-
     fieldsets = (
         (None, {"fields": ("email", "password", "type")}),
         ("Personal info", {"fields": ("first_name", "last_name")}),
@@ -38,7 +37,7 @@ class CustomUserAdmin(UserAdmin):
         ),
         ("Important dates", {"fields": ("last_login", "date_joined")}),
     )
-    list_display = ("email", "first_name", "last_name", "is_staff")
+    list_display = ["email", "first_name", "last_name", "is_staff"]
 
 
 @admin.register(Shop)
@@ -84,7 +83,7 @@ class ProductParameterInline(admin.TabularInline):
     model = ProductParameter
     extra = 0
     fields = ("parameter", "value")
-    readonly_fields = ("parameter", "value")
+    readonly_fields = ["parameter", "value"]
 
 
 @admin.register(ProductInfo)
@@ -110,7 +109,6 @@ class ParameterAdmin(admin.ModelAdmin):
 
 @admin.register(ProductParameter)
 class ProductParameterAdmin(admin.ModelAdmin):
-    pass
     list_display = [
         "product_info",
         "parameter",
@@ -122,33 +120,29 @@ class ProductParameterAdmin(admin.ModelAdmin):
 class OrderItemInline(admin.StackedInline):
     model = OrderItem
     extra = 0
-    fields = (("product_info", "quantity"),)
-    readonly_fields = ("product_info", "quantity")
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    inlines = [OrderItemInline]
     fields = ("id", "status", ("user", "contact"))
-    readonly_fields = ("id", "user", "contact")
-    list_display = ("id", "user", "status", "dt")
-    list_filter = ("user", "status", "dt")
-    inlines = [
-        OrderItemInline,
-    ]
+    readonly_fields = ["id", "user", "contact"]
+    list_display = ["id", "user", "status", "dt"]
+    list_filter = ["user", "status", "dt"]
 
-    def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
+    def save_model(self, request, data, form, change):
+        super().save_model(request, data, form, change)
 
-        rus_state = ""
-        for state_tuple in Order.Status:
-            if state_tuple[0] == obj.status:
-                rus_state = state_tuple[1]
+        status = None
+        for status_tuple in Order.Status.choices:
+            if status_tuple[0] == data.status:
+                status = status_tuple[1]
                 break
 
-        title = f"Обновление статуса заказа {obj.id}"
-        message = f"Заказ {obj.id} получил статус {rus_state}."
-        addressee_list = [obj.user.email]
-        send_msg_task.delay(title, message, addressee_list)
+        subject = "Updating the order status"
+        body = f"The order {data.id} has been {status}"
+        to_email = [data.user.email]
+        send_msg_task.delay(subject, body, to_email)
 
 
 @admin.register(OrderItem)

@@ -8,11 +8,11 @@ POST {{baseUrl}}/user/register/
 Content-Type: application/json
 
 {
-  "first_name": "max",
-  "last_name": "tols", 
+  "first_name": "Maksim",
+  "last_name": "Tolstikov",
   "email": "tolstikov-95@inbox.ru", 
-  "password": "admin1234567",
-  "username": "admin123",
+  "password": "qwerty_123",
+  "username": "tolstikov-95",
   "phone": "89001234567",
   "type": "BR"
 }
@@ -36,7 +36,7 @@ Content-Type: application/json
 
 {
   "email": "tolstikov-95@inbox.ru",
-  "password": "admin1234567"
+  "password": "qwerty_123"
 }
 
 ###
@@ -54,12 +54,12 @@ Content-Type: application/json
 Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
 
 {
-  "first_name": "maxsy",
-  "last_name": "tolsy", 
+  "first_name": "Max",
+  "last_name": "Tols",
   "email": "tolstikov-9995@inbox.ru", 
-  "password": "admin1234567",
+  "password": "qwerty_12345",
   "phone": "87598598",
-  "username": "admin12345"
+  "username": "max-tols"
 }
 
 
@@ -83,7 +83,7 @@ Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
   "house": "10",
   "building": "1",
   "structure": "2",
-  "apartment": "124"
+  "apartment": "12"
 }
 
 ###
@@ -96,11 +96,11 @@ Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
 {
   "contact_id": "1",
   "city": "Moscow",
-  "street": "Tverskaya",
-  "house": "10",
-  "building": "100",
-  "structure": "2",
-  "apartment": "100"
+  "street": "Arbat",
+  "house": "8",
+  "building": "2",
+  "structure": "12",
+  "apartment": "97"
 }
 
 ###
@@ -111,7 +111,7 @@ Content-Type: application/json
 Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
 
 {
-  "contact_id": "3"
+  "contact_id": "1"
 }
 
 ###
@@ -123,9 +123,10 @@ Content-Type: application/json
 {  
   "email": "tolstikov-95@inbox.ru"
 }
+
 ###
 
-# подтверждение пользователя
+# повторное подтверждение пользователя
 POST {{baseUrl}}/user/reset_password/confirm/
 Content-Type: application/json
 
@@ -155,7 +156,7 @@ Authorization: Token 273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
 
 ###
 
-# изменение статуса магазина
+# автоматическое изменение статуса магазина
 POST {{baseUrl}}/seller/status/
 Content-Type: application/json
 Authorization: Token 273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
@@ -185,11 +186,10 @@ Content-Type: application/json
 GET {{baseUrl}}/products/
 Content-Type: application/json
 
-
 ###
 
 # получение информации о продукте
-GET {{baseUrl}}/product_info?shop_id=1&product_id=10
+GET {{baseUrl}}/product_info?shop_id=1&product_id=1
 Content-Type: application/json
 
 ###
@@ -208,7 +208,7 @@ Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
 
 {
   "items": 
-    [{"product_info": 5, "quantity": 4}, {"product_info": 6, "quantity": 1}]
+    [{"product_info": 1 "quantity": 4}, {"product_info": 2, "quantity": 1}]
 }
 
 ###
@@ -250,5 +250,5 @@ Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
 
 {
   "id": 1, 
-  "contact": 4
+  "contact": 2
 }
