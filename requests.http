@@ -208,7 +208,7 @@ Authorization: Token 37273f6fa092ad4e5f91ada1aa65bc1b8f34aaf1
 
 {
   "items": 
-    [{"product_info": 1 "quantity": 4}, {"product_info": 2, "quantity": 1}]
+    [{"product_info": 1, "quantity": 4}, {"product_info": 2, "quantity": 1}]
 }
 
 ###

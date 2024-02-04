@@ -408,9 +408,6 @@ class OrderView(APIView):
         if not request.user.is_authenticated:
             return Response("Log in required", status=403)
 
-        if request.user.type != "SP":
-            return Response("Only shop", status=403)
-
         if not {"id", "contact"}.issubset(request.data):
             return Response("No added all arguments", status=400)
 

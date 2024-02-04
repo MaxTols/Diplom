@@ -21,3 +21,20 @@
 - Может изменить статус заказа, при этом клиент получает информационное письмо.
 
 ## Запуск проекта
+
+1. Создать файл _.env_ с данными указанными в файле [orders/.env-example](orders/.env-example).
+2. Перейти в директорию _orders_, где расположен файл _docker-compose.yml_.
+3. Запустить _docker-compose_
+
+    <code>>> docker-compose up -d --build</code>
+
+**Команда для создания суперпользователя:**
+
+    <code>>> docker-compose exec backend python manage.py createsuperuser</code>
+
+## Адреса сервиса 
+
+- API: [http://127.0.0.1:8000/backend/](http://127.0.0.1:8000/backend/)
+- Django admin: [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)
+- pgAdmin: [http://127.0.0.1:5050/](http://127.0.0.1:5050/)
+- Документация по запросам: [https://github.com/MaxTols/Diplom/blob/master/requests.http](https://github.com/MaxTols/Diplom/blob/master/requests.http)
