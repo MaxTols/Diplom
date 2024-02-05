@@ -38,3 +38,4 @@
 - Django admin: [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)
 - pgAdmin: [http://127.0.0.1:5050/](http://127.0.0.1:5050/)
 - Документация по запросам: [requests.http](requests.http)
+- Документация по запросам в Postman: [postman_requests](https://documenter.getpostman.com/view/32790002/2s9YywfKMR)
