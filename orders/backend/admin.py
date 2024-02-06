@@ -83,7 +83,6 @@ class ProductParameterInline(admin.TabularInline):
     model = ProductParameter
     extra = 0
     fields = ("parameter", "value")
-    readonly_fields = ["parameter", "value"]
 
 
 @admin.register(ProductInfo)
@@ -102,6 +101,7 @@ class ProductInfoAdmin(admin.ModelAdmin):
 
 @admin.register(Parameter)
 class ParameterAdmin(admin.ModelAdmin):
+    inlines = [ProductParameterInline]
     list_display = [
         "name",
     ]
@@ -120,6 +120,7 @@ class ProductParameterAdmin(admin.ModelAdmin):
 class OrderItemInline(admin.StackedInline):
     model = OrderItem
     extra = 0
+    readonly_fields = ("product_info", "quantity")
 
 
 @admin.register(Order)
@@ -169,7 +170,7 @@ class ContactAdmin(admin.ModelAdmin):
     list_filter = ["city"]
     search_fields = [
         "user__last_name",
-        "user_first_name",
+        "user__first_name",
     ]
 
 

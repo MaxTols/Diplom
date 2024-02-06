@@ -58,7 +58,7 @@ class User(AbstractUser):
         verbose_name_plural = "Users"
 
     def __str__(self):
-        return f"{self.last_name} {self.first_name}"
+        return f"{self.first_name} {self.last_name}"
 
 
 class Shop(models.Model):
@@ -124,6 +124,9 @@ class ProductInfo(models.Model):
         verbose_name = "Product information"
         verbose_name_plural = "Product information"
 
+    def __str__(self):
+        return f"{self.product}"
+
 
 class Parameter(models.Model):
     name = models.CharField(max_length=100)
@@ -149,6 +152,9 @@ class ProductParameter(models.Model):
     class Meta:
         verbose_name = "Product parameter"
         verbose_name_plural = "Product parameters"
+
+    def __str__(self):
+        return f"{self.parameter}"
 
 
 class Contact(models.Model):
@@ -217,6 +223,9 @@ class OrderItem(models.Model):
     class Meta:
         verbose_name = "Order item"
         verbose_name_plural = "Order items"
+
+    def __str__(self):
+        return f"{self.product_info.model}"
 
 
 class ConfirmEmailToken(models.Model):
