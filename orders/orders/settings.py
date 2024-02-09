@@ -36,6 +36,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    "baton",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "django_rest_passwordreset",
+    "baton.autodiscover",
 ]
 
 MIDDLEWARE = [
@@ -167,4 +169,56 @@ EMAIL_PORT = "465"
 EMAIL_USE_SSL = True
 SERVER_EMAIL = EMAIL_HOST_USER
 
-
+BATON = {
+    'SITE_HEADER': 'Online shop',
+    'SITE_TITLE': 'Shop',
+    'INDEX_TITLE': 'Administration API',
+    'SUPPORT_HREF': 'https://github.com/MaxTols',
+    'COPYRIGHT': 'copyright © 2024 <a href="https://github.com/MaxTols">MaxTols</a>',
+    'POWERED_BY': '<a href="https://github.com/MaxTols">MaxTols</a>',
+    'CONFIRM_UNSAVED_CHANGES': True,
+    'SHOW_MULTIPART_UPLOADING': True,
+    'ENABLE_IMAGES_PREVIEW': True,
+    'CHANGELIST_FILTERS_IN_MODAL': True,
+    'CHANGELIST_FILTERS_ALWAYS_OPEN': False,
+    'CHANGELIST_FILTERS_FORM': True,
+    'CHANGEFORM_FIXED_SUBMIT_ROW': True,
+    'MENU_ALWAYS_COLLAPSED': False,
+    'MENU_TITLE': 'Menu',
+    'MESSAGES_TOASTS': False,
+    'GRAVATAR_DEFAULT_IMG': 'retro',
+    'GRAVATAR_ENABLED': True,
+    'LOGIN_SPLASH': '/static/core/img/login-splash.png',
+    'FORCE_THEME': None,
+    'SEARCH_FIELD': {
+        'label': 'Search contents...',
+        'url': '/search/',
+    },
+}
+#     'MENU': (
+#         { 'type': 'title', 'label': 'main', 'apps': ('auth', ) },
+#         {
+#             'type': 'app',
+#             'name': 'auth',
+#             'label': 'Authentication',
+#             'icon': 'fa fa-lock',
+#             'models': (
+#                 {
+#                     'name': 'user',
+#                     'label': 'Users'
+#                 },
+#                 {
+#                     'name': 'group',
+#                     'label': 'Groups'
+#                 },
+#             )
+#         },
+#         { 'type': 'title', 'label': 'Contents', 'apps': ('flatpages', ) },
+#         { 'type': 'model', 'label': 'Pages', 'name': 'flatpage', 'app': 'flatpages' },
+#         { 'type': 'free', 'label': 'Custom Link', 'url': 'http://www.google.it', 'perms': ('flatpages.add_flatpage', 'auth.change_user') },
+#         { 'type': 'free', 'label': 'My parent voice', 'default_open': True, 'children': [
+#             { 'type': 'model', 'label': 'A Model', 'name': 'mymodelname', 'app': 'myapp' },
+#             { 'type': 'free', 'label': 'Another custom link', 'url': 'http://www.google.it' },
+#         ] },
+#     )
+# }
