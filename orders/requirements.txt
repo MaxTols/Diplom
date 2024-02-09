@@ -7,3 +7,5 @@ python-dotenv==1.0.0
 PyYAML==6.0.1
 requests==2.31.0
 redis==5.0.1
+django-baton==3.0.2
+social-auth-app-django==5.4.0

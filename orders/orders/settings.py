@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "django_rest_passwordreset",
     "baton.autodiscover",
+    "social_django",
 ]
 
 MIDDLEWARE = [
@@ -58,6 +59,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 ROOT_URLCONF = "orders.urls"
@@ -73,6 +75,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -195,30 +199,27 @@ BATON = {
         'url': '/search/',
     },
 }
-#     'MENU': (
-#         { 'type': 'title', 'label': 'main', 'apps': ('auth', ) },
-#         {
-#             'type': 'app',
-#             'name': 'auth',
-#             'label': 'Authentication',
-#             'icon': 'fa fa-lock',
-#             'models': (
-#                 {
-#                     'name': 'user',
-#                     'label': 'Users'
-#                 },
-#                 {
-#                     'name': 'group',
-#                     'label': 'Groups'
-#                 },
-#             )
-#         },
-#         { 'type': 'title', 'label': 'Contents', 'apps': ('flatpages', ) },
-#         { 'type': 'model', 'label': 'Pages', 'name': 'flatpage', 'app': 'flatpages' },
-#         { 'type': 'free', 'label': 'Custom Link', 'url': 'http://www.google.it', 'perms': ('flatpages.add_flatpage', 'auth.change_user') },
-#         { 'type': 'free', 'label': 'My parent voice', 'default_open': True, 'children': [
-#             { 'type': 'model', 'label': 'A Model', 'name': 'mymodelname', 'app': 'myapp' },
-#             { 'type': 'free', 'label': 'Another custom link', 'url': 'http://www.google.it' },
-#         ] },
-#     )
-# }
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.twitter.TwitterOAuth',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.social_auth.associate_by_email',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
