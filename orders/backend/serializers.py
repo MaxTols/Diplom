@@ -93,6 +93,7 @@ class UserSerializer(serializers.ModelSerializer):
             "phone",
             "type",
             "contact",
+            "avatar_thumbnail"
         )
         read_only_fields = ("id",)
 

@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 from django.db import models
 from django_rest_passwordreset.tokens import get_token_generator
+from imagekit.models import ProcessedImageField
+from imagekit.processors import ResizeToFill
 
 
 class UserManager(BaseUserManager):
@@ -45,6 +47,11 @@ class User(AbstractUser):
     is_active = models.BooleanField(default=False)
     type = models.CharField(max_length=2, choices=Status.choices, default="BR")
     phone = models.CharField(max_length=20)
+    avatar_thumbnail = ProcessedImageField(upload_to='avatar',
+                                           processors=[ResizeToFill(100, 50)],
+                                           format="JPEG",
+                                           options={"quality": 60},
+                                           blank=True, null=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
     objects = UserManager()

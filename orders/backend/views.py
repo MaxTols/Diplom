@@ -27,7 +27,7 @@ from .serializers import (
     OrderSerializer,
     OrderItemSerializer,
 )
-from .tasks import send_msg_task, import_data_task
+from .tasks import send_msg_task, import_data_task, upload_avatar_task
 
 
 class RegisterUserView(APIView):
@@ -127,6 +127,12 @@ class AccountDetailsView(APIView):
             return Response("Account details is updated")
         else:
             return Response(user_serializer.errors, status=400)
+
+    def patch(self, request, *args, **kwargs):
+        user_id = request.user.id
+        data = request.data
+        upload_avatar_task.delay(user_id, data)
+        return Response("Avatar is updated")
 
 
 class ContactView(APIView):

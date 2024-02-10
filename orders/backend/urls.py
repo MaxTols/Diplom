@@ -1,4 +1,6 @@
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 from django_rest_passwordreset.views import (
     reset_password_request_token,
     reset_password_confirm,
@@ -39,4 +41,4 @@ urlpatterns = [
     path("product_info/", ProductInfoView.as_view(), name="product_info"),
     path("basket/", BasketView.as_view(), name="basket"),
     path("order/", OrderView.as_view(), name="order"),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

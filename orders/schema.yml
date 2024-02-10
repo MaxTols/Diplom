@@ -1,0 +1,436 @@
+openapi: 3.0.3
+info:
+  title: Orders API
+  version: ''
+  description: Description API
+paths:
+  /backend/basket/:
+    get:
+      operationId: backend_basket_retrieve
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: backend_basket_create
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: backend_basket_update
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: backend_basket_destroy
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /backend/categories/:
+    get:
+      operationId: backend_categories_list
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+          description: ''
+  /backend/order/:
+    get:
+      operationId: backend_order_retrieve
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: backend_order_create
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /backend/product_info/:
+    get:
+      operationId: backend_product_info_retrieve
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /backend/products/:
+    get:
+      operationId: backend_products_list
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+          description: ''
+  /backend/seller/orders/:
+    get:
+      operationId: backend_seller_orders_retrieve
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /backend/seller/status/:
+    get:
+      operationId: backend_seller_status_retrieve
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: backend_seller_status_create
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /backend/seller/update/:
+    post:
+      operationId: backend_seller_update_create
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /backend/shops/:
+    get:
+      operationId: backend_shops_list
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Shop'
+          description: ''
+  /backend/user/contact/:
+    get:
+      operationId: backend_user_contact_retrieve
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: backend_user_contact_create
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: backend_user_contact_update
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: backend_user_contact_destroy
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /backend/user/details/:
+    get:
+      operationId: backend_user_details_retrieve
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: backend_user_details_create
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /backend/user/login/:
+    post:
+      operationId: backend_user_login_create
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /backend/user/register/:
+    post:
+      operationId: backend_user_register_create
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /backend/user/register/confirm/:
+    post:
+      operationId: backend_user_register_confirm_create
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /backend/user/reset_password/:
+    post:
+      operationId: backend_user_reset_password_create
+      description: |-
+        An Api View which provides a method to request a password reset token based on an e-mail address
+
+        Sends a signal reset_password_token_created when a reset token was created
+      tags:
+      - backend
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmailRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Email'
+          description: ''
+  /backend/user/reset_password/confirm/:
+    post:
+      operationId: backend_user_reset_password_confirm_create
+      description: An Api View which provides a method to reset a password based on
+        a unique token
+      tags:
+      - backend
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordTokenRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordTokenRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordTokenRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordToken'
+          description: ''
+  /backend/user/thumbnail/:
+    post:
+      operationId: backend_user_thumbnail_create
+      tags:
+      - backend
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+      required:
+      - id
+      - name
+    Email:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    EmailRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - email
+    PasswordToken:
+      type: object
+      properties:
+        password:
+          type: string
+        token:
+          type: string
+      required:
+      - password
+      - token
+    PasswordTokenRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          minLength: 1
+        token:
+          type: string
+          minLength: 1
+      required:
+      - password
+      - token
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+      required:
+      - category
+      - id
+      - name
+    Shop:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 50
+        url:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 200
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+      required:
+      - id
+      - name
+    StatusEnum:
+      enum:
+      - OP
+      - CL
+      type: string
+      description: |-
+        * `OP` - Open
+        * `CL` - Close
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"

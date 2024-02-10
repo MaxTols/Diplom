@@ -47,8 +47,10 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "django_rest_passwordreset",
-    "baton.autodiscover",
     "social_django",
+    "imagekit",
+    "drf_spectacular",
+    "baton.autodiscover",
 ]
 
 MIDDLEWARE = [
@@ -135,6 +137,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
+MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -154,7 +158,9 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/day",
         "user": "1000/day"
-    }
+    },
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "TEST_REQUEST_DEFAULT_FORMAT": "json",
 }
 
 # Celery settings
@@ -223,3 +229,16 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
 )
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Orders API",
+    "DESCRIPTION": "Description API",
+    "VERSION": None,
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": "/api/v[0-9]",
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SWAGGER_UI_SETTINGS": {
+        "persistAuthorization": True,
+        "defaultModelsExpandDepth": -1,
+    },
+}

@@ -5,7 +5,9 @@ from celery import shared_task
 from requests import get
 from yaml import Loader
 from yaml import load as load_yaml
-from .models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter
+from .models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter, User
+from .serializers import UserSerializer
+from rest_framework.response import Response
 
 
 @shared_task()
@@ -48,3 +50,13 @@ def import_data_task(url, user_id):
                 parameter_id=parameter_obj.id,
                 value=value,
             )
+
+
+@shared_task
+def upload_avatar_task(data, user_id):
+    user = User.objects.filter(id=user_id).first()
+    user_serializer = UserSerializer(user, data=data, partial=True)
+    if user_serializer.is_valid():
+        user_serializer.save()
+        return Response(user_serializer.data)
+    return Response(user_serializer.errors)
