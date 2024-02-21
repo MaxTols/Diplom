@@ -1,10 +1,12 @@
 import os
 
 import pytest
-from backend.models import User
+from backend.models import User, Shop, Category, Product, ProductInfo
+from django.urls import reverse
 from django.conf import settings
 from rest_framework import status
 from rest_framework.test import APIClient
+from model_bakery import baker
 
 PATH_PREFIX = "http://127.0.0.1:8000/backend/"
 
@@ -16,9 +18,8 @@ def full_path(relative_path: str) -> str:
 valid_user_data = {
     "email": "seller@mail.ru",
     "password": "wl;ef;lwnefd",
-    "company": "Netology",
-    "first_name": "Иван",
-    "last_name": "Иванов",
+    "first_name": "Max",
+    "last_name": "Tols",
     "phone": "9051234567",
 }
 
@@ -49,7 +50,7 @@ test_data_only_for_shops = [
 ]
 
 valid_update_data = {
-    "file": os.path.join(os.path.dirname(settings.BASE_DIR), "data/shop1.yaml"),
+    "file": os.path.join(os.path.dirname(settings.BASE_DIR), "orders/fixtures/shop.yaml"),
     "url": "https://raw.githubusercontent.com/netology-code/pd-diplom/master/data/shop1.yaml",
 }
 test_data_update_price_info = [
@@ -79,12 +80,12 @@ class TestSeller:
 
     @pytest.fixture
     def valid_seller(self, valid_user):
-        valid_user.type = "shop"
+        valid_user.type = "SP"
         valid_user.save()
         return valid_user
 
     @pytest.mark.parametrize(
-        "data, expected_status, description", valid_user_data
+        "data, expected_status, description", test_data_register_user
     )
     def test_register_user(self, api_client, data, expected_status, description):
         count = User.objects.count()
@@ -120,22 +121,51 @@ class TestSeller:
         "file_path, url, expected_status, description", test_data_update_price_info
     )
     def test_price_info(
-        self, api_client, valid_partner, file_path, url, expected_status, description
+        self, api_client, valid_seller, file_path, url, expected_status, description
     ):
-        api_client.force_authenticate(valid_partner)
+        api_client.force_authenticate(valid_seller)
 
         if file_path:
             with open(file_path, "rb") as fp:
                 response = api_client.post(
-                    full_path("user/update/"), {"file": fp}, format="multipart"
+                    full_path("seller/update/"), {"file": fp}, format="multipart"
                 )
         elif url:
             response = api_client.post(
-                full_path("user/update/"), {"url": url}, format="multipart"
+                full_path("seller/update/"), {"url": url}, format="multipart"
             )
         else:
             response = api_client.post(
-                full_path("user/update/"),
+                full_path("seller/update/"),
             )
 
         assert response.status_code == expected_status, description
+
+
+# @pytest.fixture
+# def shop_factory():
+#     def factory(*args, **kwargs):
+#         return baker.make(Shop, *args, **kwargs)
+#
+#     return factory
+
+
+# @pytest.fixture
+# def client():
+#     return APIClient()
+
+
+# @pytest.mark.django_db
+# def test_shop(client, shop_factory):
+#     shop = shop_factory(_quantity=1)
+#     response = client.get(full_path("shops/"))
+#     assert response.status_code == 200
+#     for i, v in enumerate(response.data):
+#         assert v["name"] == shop[i].name
+
+
+# @pytest.mark.django_db
+# def test_shops(client):
+#     User.objects.create_user("admin")
+#     response = client.post(full_path("shops/"), data={"user": 1, "name": "MEGA"})
+#     assert response.status_code == 201

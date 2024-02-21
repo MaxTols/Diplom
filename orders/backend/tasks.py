@@ -52,7 +52,7 @@ def import_data_task(url, user_id):
             )
 
 
-@shared_task
+@shared_task()
 def upload_avatar_task(data, user_id):
     user = User.objects.filter(id=user_id).first()
     user_serializer = UserSerializer(user, data=data, partial=True)
