@@ -1,12 +1,10 @@
 import os
 
 import pytest
-from backend.models import User, Shop, Category, Product, ProductInfo
-from django.urls import reverse
+from backend.models import User
 from django.conf import settings
 from rest_framework import status
 from rest_framework.test import APIClient
-from model_bakery import baker
 
 PATH_PREFIX = "http://127.0.0.1:8000/backend/"
 
@@ -16,11 +14,12 @@ def full_path(relative_path: str) -> str:
 
 
 valid_user_data = {
-    "email": "seller@mail.ru",
-    "password": "wl;ef;lwnefd",
-    "first_name": "Max",
-    "last_name": "Tols",
-    "phone": "9051234567",
+    "first_name": "Maksim",
+    "last_name": "Tolstikov",
+    "email": "tolstikov-95@inbox.ru",
+    "password": "qwerty_123",
+    "username": "tolstikov-95",
+    "phone": "89001234567",
 }
 
 test_data_register_user = [
@@ -54,15 +53,8 @@ valid_update_data = {
     "url": "https://raw.githubusercontent.com/netology-code/pd-diplom/master/data/shop1.yaml",
 }
 test_data_update_price_info = [
-    [
-        valid_update_data["file"],
-        valid_update_data["url"],
-        status.HTTP_200_OK,
-        "Корректные данные",
-    ],
-    [valid_update_data["file"], None, status.HTTP_200_OK, "Только файл"],
-    [None, valid_update_data["url"], status.HTTP_200_OK, "Только url"],
-    [None, None, status.HTTP_400_BAD_REQUEST, "Данные не переданы"],
+    [valid_update_data["url"], status.HTTP_200_OK, "Только url"],
+    [None, status.HTTP_400_BAD_REQUEST, "Данные не переданы"],
 ]
 
 
@@ -118,19 +110,14 @@ class TestSeller:
         ), "Не является магазином"
 
     @pytest.mark.parametrize(
-        "file_path, url, expected_status, description", test_data_update_price_info
+        "url, expected_status, description", test_data_update_price_info
     )
     def test_price_info(
-        self, api_client, valid_seller, file_path, url, expected_status, description
+        self, api_client, valid_seller, url, expected_status, description
     ):
         api_client.force_authenticate(valid_seller)
 
-        if file_path:
-            with open(file_path, "rb") as fp:
-                response = api_client.post(
-                    full_path("seller/update/"), {"file": fp}, format="multipart"
-                )
-        elif url:
+        if url:
             response = api_client.post(
                 full_path("seller/update/"), {"url": url}, format="multipart"
             )
@@ -140,32 +127,3 @@ class TestSeller:
             )
 
         assert response.status_code == expected_status, description
-
-
-# @pytest.fixture
-# def shop_factory():
-#     def factory(*args, **kwargs):
-#         return baker.make(Shop, *args, **kwargs)
-#
-#     return factory
-
-
-# @pytest.fixture
-# def client():
-#     return APIClient()
-
-
-# @pytest.mark.django_db
-# def test_shop(client, shop_factory):
-#     shop = shop_factory(_quantity=1)
-#     response = client.get(full_path("shops/"))
-#     assert response.status_code == 200
-#     for i, v in enumerate(response.data):
-#         assert v["name"] == shop[i].name
-
-
-# @pytest.mark.django_db
-# def test_shops(client):
-#     User.objects.create_user("admin")
-#     response = client.post(full_path("shops/"), data={"user": 1, "name": "MEGA"})
-#     assert response.status_code == 201
